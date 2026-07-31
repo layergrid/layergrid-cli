@@ -27,7 +27,7 @@ For a tagged release, verify an artifact with:
 cosign verify-blob \
   --certificate layergrid_VERSION_darwin_arm64.tar.gz.pem \
   --signature layergrid_VERSION_darwin_arm64.tar.gz.sig \
-  --certificate-identity-regexp '^https://github.com/layergrid/layergrid-cli' \
+  --certificate-identity-regexp '^https://github.com/layergrid/layergrid-cli/.github/workflows/release.yaml@refs/tags/VERSION_TAG$' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   layergrid_VERSION_darwin_arm64.tar.gz
 ```
@@ -70,8 +70,11 @@ layergrid scan . --format sarif --output layergrid.sarif
 gh api repos/layergrid/layergrid-cli/code-scanning/sarifs --method POST --input payload.json
 ```
 
-## Known External Blockers Before Public RC
+## Public RC Validation
 
-- `brew install layergrid/tap/layergrid` requires public release assets or an authenticated private-release distribution path.
-- Curl installer end-to-end validation requires a public release asset URL.
-- SARIF ingestion should be validated against `layergrid/layergrid-cli` after it is public.
+- `v0.1.0-rc.1` release workflow completed successfully.
+- Release archives, SBOMs, and `checksums.txt` all have Cosign `.sig` and `.pem` assets.
+- `cosign verify-blob` passed for `checksums.txt`, Darwin arm64, and Linux amd64 artifacts.
+- `brew install --formula layergrid/tap/layergrid` installs `0.1.0-rc.1`.
+- `curl -sSL https://layergrid.github.io/layergrid-cli/install.sh | bash` installs `0.1.0-rc.1` on macOS and Ubuntu.
+- LayerGrid SARIF self-scan was accepted by GitHub code scanning for `layergrid/layergrid-cli`.

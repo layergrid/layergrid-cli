@@ -16,7 +16,7 @@ This checklist tracks the remaining work before tagging `v0.1.0`.
 - [x] Create private Homebrew tap repo for release validation
 - [x] Run and document 10-repo precision corpus
 - [x] Add regression fixtures for FP classes found in corpus
-- [ ] Validate SARIF upload in GitHub code scanning against `layergrid/layergrid-cli`
+- [x] Validate SARIF upload in GitHub code scanning against `layergrid/layergrid-cli`
 - [x] Benchmark harness: 1k-file scan averages about 84ms on Apple M3
 - [x] Benchmark against 10 real-world projects and record timings
 - [x] Add byte-for-byte human output snapshot test
@@ -25,12 +25,14 @@ This checklist tracks the remaining work before tagging `v0.1.0`.
 - [x] Verify Homebrew tap publishing with a cross-repo release token
 - [x] Commit curl installer script
 - [x] Public-facing README, principles, rules, contributing, benchmark, precision, and release docs
-- [ ] Verify Cosign signatures on `checksums.txt` and a public release archive
-- [ ] Verify Homebrew install from public release assets
-- [ ] Verify curl installer against public release assets
-- [ ] Cut public `v0.1.0-rc.1`
+- [x] Verify Cosign signatures on `checksums.txt` and public release archives
+- [x] Verify Homebrew install from public release assets
+- [x] Verify curl installer against public release assets on macOS and Ubuntu
+- [x] Cut public `v0.1.0-rc.1`
 
-## Blockers
+## Validation Notes
 
-- Homebrew install and curl installer validation require public release asset URLs.
-- SARIF ingestion should be validated against `layergrid/layergrid-cli` after the repo is public.
+- `v0.1.0-alpha.0` was used as a throwaway signing/install dry run and deleted after validation.
+- `v0.1.0-rc.1` is the current public release candidate.
+- Dogfood self-scan passes with Grade A and zero findings.
+- `layergrid/layergrid-cli` code scanning accepted the LayerGrid SARIF self-scan.
