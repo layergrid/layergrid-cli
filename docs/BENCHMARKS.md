@@ -18,16 +18,16 @@ All measured scans met both budgets.
 
 | Repo | Scanned LoC | Cold seconds | Warm seconds | Peak RSS | Findings |
 |---|---:|---:|---:|---:|---:|
-| langchain-ai/langchain | 401,209 | 0.84 | 1.01 | 17.2 MiB | 7 |
-| run-llama/llama_index | 942,761 | 1.39 | 1.42 | 17.2 MiB | 0 |
-| crewAIInc/crewAI | 644,189 | 1.00 | 1.11 | 23.8 MiB | 69 |
-| microsoft/autogen | 120,437 | 0.27 | 0.27 | 16.9 MiB | 197 |
-| browser-use/browser-use | 126,339 | 0.17 | 0.17 | 14.5 MiB | 1 |
-| openai/openai-agents-python | 314,488 | 0.47 | 0.43 | 14.4 MiB | 0 |
-| anthropics/anthropic-cookbook | 170,073 | 0.06 | 0.06 | 13.9 MiB | 0 |
+| langchain-ai/langchain | 401,209 | 0.76 | 0.74 | 16.5 MiB | 7 |
+| run-llama/llama_index | 942,761 | 1.37 | 1.34 | 17.6 MiB | 0 |
+| crewAIInc/crewAI | 644,189 | 0.93 | 0.94 | 24.3 MiB | 69 |
+| microsoft/autogen | 120,437 | 0.25 | 0.25 | 17.2 MiB | 197 |
+| browser-use/browser-use | 126,339 | 0.17 | 0.19 | 14.5 MiB | 1 |
+| openai/openai-agents-python | 314,488 | 0.53 | 0.42 | 14.3 MiB | 0 |
+| anthropics/anthropic-cookbook | 170,073 | 0.06 | 0.06 | 13.5 MiB | 0 |
 | modelcontextprotocol/servers | 7,546 | 0.01 | 0.01 | 11.0 MiB | 0 |
-| smol-ai/developer | 1,268 | 0.01 | 0.01 | 9.8 MiB | 0 |
-| mem0ai/mem0 | 137,638 | 0.18 | 0.18 | 13.8 MiB | 1 |
+| smol-ai/developer | 1,268 | 0.00 | 0.00 | 9.9 MiB | 0 |
+| mem0ai/mem0 | 137,638 | 0.17 | 0.16 | 13.9 MiB | 1 |
 
 Notes:
 
