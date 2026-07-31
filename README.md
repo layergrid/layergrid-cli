@@ -12,7 +12,7 @@ LayerGrid is an offline static scanner for AI agent stacks. It discovers agents,
 
 ## Status
 
-Private `v0.1.0-rc.1` candidate work. The scanner is local-only and has no cloud dependency or telemetry. The repo remains private until launch.
+Pre-release candidate work. The scanner is local-only and has no cloud dependency or telemetry.
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ go run ./cmd/layergrid list-rules
 go run ./cmd/layergrid explain LG-LETHAL-TRIFECTA-01
 ```
 
-Design partner install commands after RC publication:
+Design partner install commands after public release publication:
 
 ```sh
 brew install layergrid/tap/layergrid

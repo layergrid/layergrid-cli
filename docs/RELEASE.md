@@ -25,18 +25,18 @@ For a tagged release, verify an artifact with:
 
 ```sh
 cosign verify-blob \
-  --certificate layergrid_0.1.0-rc.1_darwin_arm64.tar.gz.pem \
-  --signature layergrid_0.1.0-rc.1_darwin_arm64.tar.gz.sig \
+  --certificate layergrid_VERSION_darwin_arm64.tar.gz.pem \
+  --signature layergrid_VERSION_darwin_arm64.tar.gz.sig \
   --certificate-identity-regexp '^https://github.com/layergrid/layergrid-cli' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-  layergrid_0.1.0-rc.1_darwin_arm64.tar.gz
+  layergrid_VERSION_darwin_arm64.tar.gz
 ```
 
 The installer verifies `checksums.txt` with the same issuer and repository identity before installing a binary.
 
 ## Homebrew
 
-Design partner install command after `v0.1.0-rc.1` is published:
+Design partner install command after a public release is published:
 
 ```sh
 brew install layergrid/tap/layergrid
@@ -44,7 +44,7 @@ brew install layergrid/tap/layergrid
 
 Cross-repo publishing uses `HOMEBREW_TAP_TOKEN`, scoped to `contents:write` on `layergrid/homebrew-tap`.
 
-For `v0.1.0-rc.1`, GoReleaser published `Casks/layergrid.rb` to the private tap. A local `brew install layergrid/tap/layergrid` reached the release asset download but GitHub returned 404 because the CLI repo and release assets are still private. This is expected while the repos remain private.
+The tap publish path uses public GitHub release asset URLs. Validate `brew install layergrid/tap/layergrid` only after `layergrid/layergrid-cli` is public.
 
 ## Curl
 
@@ -66,19 +66,12 @@ go install github.com/layergrid/layergrid-cli/cmd/layergrid@latest
 Expected validation flow:
 
 ```sh
-layergrid scan ./testdata/langchain-trifecta --format sarif --output layergrid.sarif
-gzip -c layergrid.sarif | base64 | tr -d '\n' > layergrid.sarif.b64
-gh api repos/layergrid/sarif-test/code-scanning/sarifs --method POST --input payload.json
+layergrid scan . --format sarif --output layergrid.sarif
+gh api repos/layergrid/layergrid-cli/code-scanning/sarifs --method POST --input payload.json
 ```
 
-For `v0.1.0-rc.1`, SARIF upload to public repo `layergrid/sarif-test` completed and produced four open LayerGrid code scanning alerts:
-
-- `LG-LETHAL-TRIFECTA-01`
-- `LG-RAG-UNTRUSTED-01`
-- `LG-TOOL-EXFIL-CHAT-01`
-- `LG-AGENT-NO-GUARDRAIL-01`
-
-## Known External Blockers Before RC
+## Known External Blockers Before Public RC
 
 - `brew install layergrid/tap/layergrid` requires public release assets or an authenticated private-release distribution path.
-- Curl installer end-to-end public URL validation is descoped from this RC batch.
+- Curl installer end-to-end validation requires a public release asset URL.
+- SARIF ingestion should be validated against `layergrid/layergrid-cli` after it is public.

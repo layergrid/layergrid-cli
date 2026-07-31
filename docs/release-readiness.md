@@ -16,19 +16,21 @@ This checklist tracks the remaining work before tagging `v0.1.0`.
 - [x] Create private Homebrew tap repo for release validation
 - [x] Run and document 10-repo precision corpus
 - [x] Add regression fixtures for FP classes found in corpus
-- [x] Validate SARIF upload in GitHub code scanning
+- [ ] Validate SARIF upload in GitHub code scanning against `layergrid/layergrid-cli`
 - [x] Benchmark harness: 1k-file scan averages about 84ms on Apple M3
 - [x] Benchmark against 10 real-world projects and record timings
 - [x] Add byte-for-byte human output snapshot test
 - [x] Commit screenshot-quality first scan image
 - [x] Verify Homebrew cask generation in a private dry run
 - [x] Verify Homebrew tap publishing with a cross-repo release token
-- [x] Commit curl installer script; end-to-end public URL validation descoped from `v0.1.0-rc.1`
+- [x] Commit curl installer script
 - [x] Public-facing README, principles, rules, contributing, benchmark, precision, and release docs
-- [x] Cut `v0.1.0-rc.1` and verify GitHub Actions release workflow
-- [x] Verify Cosign signatures on `checksums.txt` and a release archive
+- [ ] Verify Cosign signatures on `checksums.txt` and a public release archive
+- [ ] Verify Homebrew install from public release assets
+- [ ] Verify curl installer against public release assets
+- [ ] Cut public `v0.1.0-rc.1`
 
 ## Blockers
 
-- Homebrew cask publishing works, but `brew install layergrid/tap/layergrid` cannot fetch release assets while `layergrid/layergrid-cli` remains private; GitHub returns 404 for the cask asset URL outside an authenticated release download path.
-- Curl installer end-to-end public URL validation is intentionally descoped from this RC batch.
+- Homebrew install and curl installer validation require public release asset URLs.
+- SARIF ingestion should be validated against `layergrid/layergrid-cli` after the repo is public.
