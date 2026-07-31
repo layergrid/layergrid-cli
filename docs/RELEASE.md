@@ -15,7 +15,7 @@ This runs:
 - archive generation
 - SBOM generation
 - checksum generation
-- Homebrew cask generation
+- Homebrew formula generation
 - archive extraction
 - `layergrid version` from the extracted archive
 
@@ -44,7 +44,7 @@ brew install layergrid/tap/layergrid
 
 Cross-repo publishing uses `HOMEBREW_TAP_TOKEN`, scoped to `contents:write` on `layergrid/homebrew-tap`.
 
-The tap publish path uses public GitHub release asset URLs. Validate `brew install layergrid/tap/layergrid` only after `layergrid/layergrid-cli` is public.
+The release workflow writes `Formula/layergrid.rb` to `layergrid/homebrew-tap` from the release checksums and public GitHub release asset URLs.
 
 ## Curl
 

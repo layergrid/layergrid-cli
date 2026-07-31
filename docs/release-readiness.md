@@ -12,7 +12,7 @@ This checklist tracks the remaining work before tagging `v0.1.0`.
 - [x] CI for tests, lint, principles check, and dogfood scan
 - [x] GoReleaser, Cosign signing hooks, SBOM declaration, Dockerfile, and verified install script scaffold
 - [x] Validate GoReleaser config with `goreleaser check`
-- [x] Validate GoReleaser snapshot output locally on macOS arm64, including cross-platform archives, SBOMs, generated Homebrew cask, archive extraction, and `layergrid version`
+- [x] Validate GoReleaser snapshot output locally on macOS arm64, including cross-platform archives, SBOMs, generated Homebrew formula, archive extraction, and `layergrid version`
 - [x] Create private Homebrew tap repo for release validation
 - [x] Run and document 10-repo precision corpus
 - [x] Add regression fixtures for FP classes found in corpus
@@ -21,7 +21,7 @@ This checklist tracks the remaining work before tagging `v0.1.0`.
 - [x] Benchmark against 10 real-world projects and record timings
 - [x] Add byte-for-byte human output snapshot test
 - [x] Commit screenshot-quality first scan image
-- [x] Verify Homebrew cask generation in a private dry run
+- [x] Verify Homebrew formula generation in a private dry run
 - [x] Verify Homebrew tap publishing with a cross-repo release token
 - [x] Commit curl installer script
 - [x] Public-facing README, principles, rules, contributing, benchmark, precision, and release docs

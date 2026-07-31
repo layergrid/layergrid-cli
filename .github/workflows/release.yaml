@@ -30,4 +30,16 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          repository: layergrid/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+      - run: |
+          scripts/generate-homebrew-formula.sh "${GITHUB_REF_NAME}" dist/checksums.txt homebrew-tap/Formula/layergrid.rb
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/layergrid.rb
+          git commit -m "Update layergrid to ${GITHUB_REF_NAME}" || exit 0
+          git push

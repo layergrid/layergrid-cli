@@ -37,19 +37,6 @@ checksum:
 sboms:
   - artifacts: archive
 
-homebrew_casks:
-  - name: layergrid
-    repository:
-      owner: layergrid
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    directory: Casks
-    homepage: https://github.com/layergrid/layergrid-cli
-    description: Offline static scanner for AI agent stack trifecta risks
-    license: Apache-2.0
-    binaries:
-      - layergrid
-
 signs:
   - cmd: cosign
     certificate: '${artifact}.pem'
