@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/layergrid/layergrid-cli/internal/detectors/detectopts"
@@ -64,9 +65,6 @@ func scanPython(root, path string, s *model.Stack) error {
 		if looksHardcodedKey(line) {
 			s.Tools = append(s.Tools, evidenceTool(root, path, lineNo, "hardcoded-api-key", "hardcoded_key"))
 		}
-		if strings.Contains(lower, "os.environ") && (strings.Contains(lower, "token") || strings.Contains(lower, "key") || strings.Contains(lower, "secret")) {
-			s.Tools = append(s.Tools, evidenceTool(root, path, lineNo, "env-credential-read", "env_credential_inline"))
-		}
 	}
 	return scanner.Err()
 }
@@ -93,6 +91,16 @@ func providerFor(line string) string {
 
 func looksHardcodedKey(line string) bool {
 	lower := strings.ToLower(line)
-	return (strings.Contains(lower, "api_key") || strings.Contains(lower, "token")) &&
-		(strings.Contains(line, "\"sk-") || strings.Contains(line, "'sk-") || strings.Contains(line, "ghp_"))
+	if strings.Contains(line, "sk-...") || strings.Contains(line, "sk-proj-1234567890") || strings.Contains(lower, "detector=") {
+		return false
+	}
+	if strings.Contains(line, "ghp_XXXXXXXXXXXXXXXX") {
+		return false
+	}
+	if !strings.Contains(lower, "api_key") && !strings.Contains(lower, "token") {
+		return false
+	}
+	openAIKey := regexp.MustCompile(`['"]sk-[A-Za-z0-9_-]{20,}['"]`)
+	githubKey := regexp.MustCompile(`['"]ghp_[A-Za-z0-9_]{20,}['"]`)
+	return openAIKey.MatchString(line) || githubKey.MatchString(line)
 }

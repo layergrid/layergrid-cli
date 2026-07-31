@@ -11,6 +11,9 @@ func Compute(findings []Finding) Score {
 	}
 	for _, f := range findings {
 		counts[f.Severity]++
+		if f.Confidence == "low" {
+			continue
+		}
 		if countedByRule[f.RuleID] < 5 {
 			total += f.ScoreImpact
 			countedByRule[f.RuleID]++

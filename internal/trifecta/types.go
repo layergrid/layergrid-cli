@@ -47,6 +47,7 @@ type Finding struct {
 	References  []string       `json:"references,omitempty"`
 	ScoreImpact int            `json:"scoreImpact"`
 	Rationale   string         `json:"rationale"`
+	Confidence  string         `json:"confidence"`
 }
 
 type Score struct {

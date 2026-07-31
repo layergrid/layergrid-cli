@@ -83,6 +83,22 @@ func TestRunHonorsExcludePatterns(t *testing.T) {
 	}
 }
 
+func TestRegressionFakeDocKeyDoesNotFire(t *testing.T) {
+	result, err := Run(filepath.Join("..", "..", "testdata", "regression", "LG-CREDENTIAL-KEY-HARDCODED-01", "fake-doc-key"), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertNoFinding(t, result, "LG-CREDENTIAL-KEY-HARDCODED-01")
+}
+
+func TestRegressionOpenAISourceSupportDoesNotCreateCodeTool(t *testing.T) {
+	result, err := Run(filepath.Join("..", "..", "testdata", "regression", "LG-TOOL-CODE-EXEC-01", "openai-source-support"), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertNoFinding(t, result, "LG-TOOL-CODE-EXEC-01")
+}
+
 func assertFinding(t *testing.T, result Result, ruleID string) {
 	t.Helper()
 	for _, f := range result.Findings {
@@ -91,4 +107,13 @@ func assertFinding(t *testing.T, result Result, ruleID string) {
 		}
 	}
 	t.Fatalf("expected finding %s, got %#v", ruleID, result.Findings)
+}
+
+func assertNoFinding(t *testing.T, result Result, ruleID string) {
+	t.Helper()
+	for _, f := range result.Findings {
+		if f.RuleID == ruleID {
+			t.Fatalf("did not expect finding %s, got %#v", ruleID, f)
+		}
+	}
 }

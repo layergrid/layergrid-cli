@@ -1,6 +1,8 @@
 bin/
 .gocache/
 .gomodcache/
+.corpus-results/
+.bench-results.tsv
 coverage.out
 dist/
 .DS_Store

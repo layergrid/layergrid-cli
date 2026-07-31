@@ -83,13 +83,14 @@ func (Detector) detectFile(root, path string, s *model.Stack) error {
 			toolVarByName[name] = tool.ID
 		}
 		if isAgentConstruction(trimmed) {
+			block := localFunctionBlock(lines, i)
 			agent := model.Agent{
 				ID:        model.StableID("agent", path, trimmed),
 				Name:      agentName(line),
 				Framework: model.FrameworkLangChain,
 				Location:  model.RelativeLocation(root, path, lineNo),
 				Tools:     refs(toolVarByName),
-				Memory:    inferMemory(lines),
+				Memory:    inferMemory(block),
 				Metadata:  map[string]string{"detector": "langchain"},
 			}
 			s.Agents = append(s.Agents, agent)
@@ -189,8 +190,8 @@ func agentName(line string) string {
 	return "langchain-agent"
 }
 
-func inferMemory(lines []string) model.MemoryConfig {
-	joined := strings.ToLower(strings.Join(lines, "\n"))
+func inferMemory(text string) model.MemoryConfig {
+	joined := strings.ToLower(text)
 	return model.MemoryConfig{Persistent: strings.Contains(joined, "memory"), Backend: ""}
 }
 

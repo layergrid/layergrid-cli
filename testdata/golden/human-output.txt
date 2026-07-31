@@ -1,0 +1,26 @@
+🔍  Scanning agent stack in /Users/nikhil/dev/my-app...
+
+Discovered
+  Agents      2     (crewai × 1, langchain × 1)
+  Tools       3     (1 function, 1 MCP, 1 shell, 0 code)
+  MCP Servers 1     (1 remote, 1 unverified publishers)
+  Datasources 1
+
+🚨  Lethal Trifecta Detected  ·  1 paths
+
+  path #1  CRITICAL  score −30    [LG-LETHAL-TRIFECTA-01]
+    support-agent  ─▶  Slack MCP  ─▶  Secrets store
+    Fix: scope Slack MCP to chat:read only  (see internal/mcp/slack.py:41)
+
+  path #2  MEDIUM    score −5    [LG-MCP-DCR-01]
+    ops-agent  ops-agent uses OAuth DCR auth mode
+    Fix: pin to static OAuth registration  (see mcp.json:2)
+
+────────────────────────────────────────
+  Trifecta Score      65 / 100
+  Grade                C
+  Findings             2  (1 critical, 0 high, 1 medium, 0 low)
+  Scan time           4.2s
+────────────────────────────────────────
+
+Run  layergrid explain LG-LETHAL-TRIFECTA-01  for details.

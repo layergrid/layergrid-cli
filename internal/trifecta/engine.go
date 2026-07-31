@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/layergrid/layergrid-cli/internal/graph"
 	"github.com/layergrid/layergrid-cli/internal/model"
@@ -220,9 +221,24 @@ func finding(rule Rule, kind, id, name string, loc model.Location, path []PathNo
 		Subject:  Subject{Kind: kind, ID: id, Name: name}, Path: path,
 		Location: loc, Fix: rule.Fix, References: rule.References,
 		ScoreImpact: rule.ScoreImpact, Rationale: rationale,
+		Confidence: confidenceFor(loc),
+	}
+	if f.Confidence == "low" {
+		f.ScoreImpact = 0
 	}
 	f.ID = stableFindingID(rule.ID, id, loc)
 	return f
+}
+
+func confidenceFor(loc model.Location) string {
+	path := strings.ToLower(loc.Path)
+	lowSignals := []string{"/test/", "/tests/", "test_", "_test.", "/examples/", "/example/", "/docs/", "/doc/", "cookbook", "/notebooks/", ".ipynb"}
+	for _, signal := range lowSignals {
+		if strings.Contains(path, signal) {
+			return "low"
+		}
+	}
+	return "high"
 }
 
 func stableFindingID(ruleID, subjectID string, loc model.Location) string {

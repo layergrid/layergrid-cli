@@ -21,7 +21,15 @@ func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) err
 			return nil
 		}
 		var toolIDs []model.ToolRef
+		inDocstring := false
 		for i, line := range lines {
+			if togglesDocstring(line) {
+				inDocstring = !inDocstring
+				continue
+			}
+			if inDocstring {
+				continue
+			}
 			lower := strings.ToLower(line)
 			if strings.Contains(line, "Tool(") || strings.Contains(lower, "tools.") {
 				tool := inferTool(root, path, i+1, pyutil.AssignmentName(line, "crewai-tool"), pyutil.Block(lines, i, 10))
@@ -35,23 +43,18 @@ func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) err
 					Framework: model.FrameworkCrewAI,
 					Location:  model.RelativeLocation(root, path, i+1),
 					Tools:     append([]model.ToolRef{}, toolIDs...),
-					Memory:    memory(lines),
+					Memory:    memory(line),
 					Metadata:  map[string]string{"detector": "crewai"},
 				}
 				s.Agents = append(s.Agents, agent)
 			}
-			if strings.Contains(line, "Crew(") && len(s.Agents) > 1 {
-				parent := s.Agents[len(s.Agents)-1]
-				for _, agent := range s.Agents[:len(s.Agents)-1] {
-					if agent.Framework == model.FrameworkCrewAI {
-						parent.SubAgents = append(parent.SubAgents, model.AgentRef(agent.ID))
-					}
-				}
-				s.Agents[len(s.Agents)-1] = parent
-			}
 		}
 		return nil
 	})
+}
+
+func togglesDocstring(line string) bool {
+	return strings.Count(line, `"""`)%2 == 1 || strings.Count(line, `'''`)%2 == 1
 }
 
 func inferTool(root, path string, line int, name, block string) model.Tool {
@@ -82,8 +85,8 @@ func inferTool(root, path string, line int, name, block string) model.Tool {
 	}
 }
 
-func memory(lines []string) model.MemoryConfig {
-	joined := strings.ToLower(strings.Join(lines, "\n"))
+func memory(line string) model.MemoryConfig {
+	joined := strings.ToLower(line)
 	return model.MemoryConfig{
 		Persistent:        strings.Contains(joined, "memory=true") || strings.Contains(joined, "memory = true"),
 		SharedAcrossUsers: strings.Contains(joined, "shared_memory") || strings.Contains(joined, "cross_user"),

@@ -34,12 +34,17 @@ curl -fsSLo "$tmpdir/checksums.txt" "$base/checksums.txt"
 curl -fsSLo "$tmpdir/checksums.txt.sig" "$base/checksums.txt.sig"
 curl -fsSLo "$tmpdir/checksums.txt.pem" "$base/checksums.txt.pem"
 
-if ! command -v cosign >/dev/null 2>&1; then
-  echo "cosign is required to verify LayerGrid releases" >&2
-  exit 1
+cosign_bin="$(command -v cosign || true)"
+if [[ -z "$cosign_bin" ]]; then
+  cosign_version="${COSIGN_VERSION:-v2.6.0}"
+  cosign_name="cosign-${os}-${arch}"
+  cosign_url="https://github.com/sigstore/cosign/releases/download/${cosign_version}/${cosign_name}"
+  cosign_bin="$tmpdir/cosign"
+  curl -fsSLo "$cosign_bin" "$cosign_url"
+  chmod +x "$cosign_bin"
 fi
 
-cosign verify-blob \
+"$cosign_bin" verify-blob \
   --certificate "$tmpdir/checksums.txt.pem" \
   --signature "$tmpdir/checksums.txt.sig" \
   --certificate-identity-regexp "https://github.com/layergrid/layergrid-cli/.github/workflows/release.yaml@refs/tags/.*" \
@@ -54,5 +59,12 @@ case "$archive" in
   *.tar.gz) tar -xzf "$archive" ;;
 esac
 
-install -m 0755 layergrid "$bindir/layergrid"
-echo "installed layergrid to $bindir/layergrid"
+if ! install -m 0755 layergrid "$bindir/layergrid" 2>/dev/null; then
+  bindir="$HOME/.local/bin"
+  mkdir -p "$bindir"
+  install -m 0755 layergrid "$bindir/layergrid"
+fi
+
+installed_version="$("$bindir/layergrid" version | head -n 1)"
+echo "LayerGrid installed: $installed_version"
+echo "Next: $bindir/layergrid scan ."

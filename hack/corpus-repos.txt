@@ -1,0 +1,10 @@
+langchain-ai/langchain
+run-llama/llama_index
+crewAIInc/crewAI
+microsoft/autogen
+browser-use/browser-use
+openai/openai-agents-python
+anthropics/anthropic-cookbook
+modelcontextprotocol/servers
+smol-ai/developer
+mem0ai/mem0

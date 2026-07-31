@@ -19,22 +19,30 @@ type Human struct {
 func (h Human) Format(r scan.Result) ([]byte, error) {
 	color.NoColor = h.NoColor
 	var b bytes.Buffer
-	fmt.Fprintf(&b, "Scanning agent stack in %s...\n\n", r.Stack.Root)
+	scanIcon, alertIcon, arrow, divider, minus := "🔍  ", "🚨  ", "  ─▶  ", "────────────────────────────────────────", "−"
+	if h.NoColor {
+		scanIcon, alertIcon, arrow, divider, minus = "", "", " -> ", "----------------------------------------", "-"
+	}
+	fmt.Fprintf(&b, "%sScanning agent stack in %s...\n\n", scanIcon, r.Stack.Root)
 	fmt.Fprintf(&b, "Discovered\n")
-	fmt.Fprintf(&b, "  Agents      %-5d %s\n", len(r.Stack.Agents), frameworkSummary(r.Stack.Agents))
+	fmt.Fprintf(&b, "  Agents      %-5d %s\n", len(r.Stack.Agents), frameworkSummary(r.Stack.Agents, h.NoColor))
 	fmt.Fprintf(&b, "  Tools       %-5d %s\n", len(r.Stack.Tools), toolSummary(r.Stack.Tools))
 	fmt.Fprintf(&b, "  MCP Servers %-5d %s\n", len(r.Stack.MCPServers), mcpSummary(r.Stack.MCPServers))
 	fmt.Fprintf(&b, "  Datasources %d\n\n", len(r.Stack.Datasources))
 
 	criticalPaths := countSeverity(r.Findings, trifecta.SeverityCritical) + countSeverity(r.Findings, trifecta.SeverityHigh)
 	if criticalPaths > 0 {
-		fmt.Fprintf(&b, "Lethal Trifecta Signals  ·  %d findings\n\n", criticalPaths)
+		fmt.Fprintf(&b, "%sLethal Trifecta Detected  ·  %d paths\n\n", alertIcon, criticalPaths)
 	} else {
 		fmt.Fprintf(&b, "No lethal trifecta path detected\n\n")
 	}
 	for i, f := range firstFindings(r.Findings, 3) {
-		fmt.Fprintf(&b, "  path #%d  %-8s score %+d    [%s]\n", i+1, strings.ToUpper(string(f.Severity)), f.ScoreImpact, f.RuleID)
-		fmt.Fprintf(&b, "    %s\n", pathLine(f))
+		score := fmt.Sprintf("%+d", f.ScoreImpact)
+		if !h.NoColor {
+			score = strings.Replace(score, "-", minus, 1)
+		}
+		fmt.Fprintf(&b, "  path #%d  %-8s  score %s    [%s]\n", i+1, strings.ToUpper(string(f.Severity)), score, f.RuleID)
+		fmt.Fprintf(&b, "    %s\n", pathLine(f, arrow))
 		fmt.Fprintf(&b, "    Fix: %s", strings.TrimSpace(f.Fix))
 		if f.Location.Path != "" {
 			fmt.Fprintf(&b, "  (see %s:%d)", f.Location.Path, f.Location.Line)
@@ -48,7 +56,7 @@ func (h Human) Format(r scan.Result) ([]byte, error) {
 		}
 		fmt.Fprintf(&b, "\n")
 	}
-	fmt.Fprintf(&b, "----------------------------------------\n")
+	fmt.Fprintf(&b, "%s\n", divider)
 	fmt.Fprintf(&b, "  Trifecta Score      %d / 100\n", r.Score.Value)
 	fmt.Fprintf(&b, "  Grade                %s\n", r.Score.Grade)
 	fmt.Fprintf(&b, "  Findings             %d  (%d critical, %d high, %d medium, %d low)\n",
@@ -59,7 +67,7 @@ func (h Human) Format(r scan.Result) ([]byte, error) {
 		r.Score.Counts[trifecta.SeverityLow],
 	)
 	fmt.Fprintf(&b, "  Scan time           %.1fs\n", r.Duration.Seconds())
-	fmt.Fprintf(&b, "----------------------------------------\n\n")
+	fmt.Fprintf(&b, "%s\n\n", divider)
 	fmt.Fprintf(&b, "Run  layergrid explain LG-LETHAL-TRIFECTA-01  for details.\n")
 	return b.Bytes(), nil
 }
@@ -71,7 +79,7 @@ func firstFindings(findings []trifecta.Finding, n int) []trifecta.Finding {
 	return findings[:n]
 }
 
-func pathLine(f trifecta.Finding) string {
+func pathLine(f trifecta.Finding, arrow string) string {
 	if len(f.Path) == 0 {
 		return fmt.Sprintf("%s  %s", f.Subject.Name, f.Rationale)
 	}
@@ -83,7 +91,7 @@ func pathLine(f trifecta.Finding) string {
 			parts = append(parts, node.ID)
 		}
 	}
-	return strings.Join(parts, " -> ")
+	return strings.Join(parts, arrow)
 }
 
 func countSeverity(findings []trifecta.Finding, sev trifecta.Severity) int {
@@ -96,7 +104,7 @@ func countSeverity(findings []trifecta.Finding, sev trifecta.Severity) int {
 	return count
 }
 
-func frameworkSummary(agents []model.Agent) string {
+func frameworkSummary(agents []model.Agent, ascii bool) string {
 	if len(agents) == 0 {
 		return ""
 	}
@@ -109,9 +117,13 @@ func frameworkSummary(agents []model.Agent) string {
 		keys = append(keys, string(fw))
 	}
 	sort.Strings(keys)
+	joiner := " × "
+	if ascii {
+		joiner = " x "
+	}
 	parts := make([]string, 0, len(keys))
 	for _, key := range keys {
-		parts = append(parts, fmt.Sprintf("%s x %d", key, counts[model.Framework(key)]))
+		parts = append(parts, fmt.Sprintf("%s%s%d", key, joiner, counts[model.Framework(key)]))
 	}
 	return "(" + strings.Join(parts, ", ") + ")"
 }

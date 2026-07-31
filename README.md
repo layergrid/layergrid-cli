@@ -1,10 +1,18 @@
-# LayerGrid
+# LayerGrid CLI
 
-LayerGrid is an offline static scanner for AI agent stacks. It discovers agents, tools, MCP servers, and capability composition risks, then reports a deterministic Trifecta Score.
+> Logo: `LG` wordmark placeholder until final brand assets land.
+
+[![CI](https://github.com/layergrid/layergrid-cli/actions/workflows/ci.yaml/badge.svg)](https://github.com/layergrid/layergrid-cli/actions/workflows/ci.yaml)
+[![Release](https://img.shields.io/badge/release-signed%20with%20cosign-blue)](docs/RELEASE.md)
+[![Provenance](https://img.shields.io/badge/provenance-SLSA%20planned-lightgrey)](docs/RELEASE.md)
+
+LayerGrid is an offline static scanner for AI agent stacks. It discovers agents, tools, MCP servers, and risky capability composition, then reports a deterministic Trifecta Score.
+
+![LayerGrid scan screenshot](docs/media/first-scan.png)
 
 ## Status
 
-Private v0.1 build. The scanner is local-only and has no cloud dependency or telemetry.
+Private `v0.1.0-rc.1` candidate work. The scanner is local-only and has no cloud dependency or telemetry. The repo remains private until launch.
 
 ## Quick Start
 
@@ -14,21 +22,38 @@ go run ./cmd/layergrid list-rules
 go run ./cmd/layergrid explain LG-LETHAL-TRIFECTA-01
 ```
 
-Install from source:
+Design partner install commands after RC publication:
+
+```sh
+brew install layergrid/tap/layergrid
+curl -sSL https://layergrid.github.io/layergrid-cli/install.sh | bash
+```
+
+Install from source anytime:
 
 ```sh
 go install github.com/layergrid/layergrid-cli/cmd/layergrid@latest
 ```
 
-## Engineering Principles
+## Example
 
-- Deterministic scans: no LLM calls and no network calls in the scan path.
-- Offline by default: built-in rules are embedded in the binary.
-- Precision over recall: findings need a rule ID, rationale, location, and fix.
-- Stable output: JSON includes `schemaVersion` and `rubricVersion`.
-- Human-readable by default: terminal output is meant to be understandable in one glance.
+```sh
+layergrid scan . --fail-on high
+layergrid scan . --format json --output layergrid.json
+layergrid scan . --format sarif --output layergrid.sarif
+```
 
-Release tracking lives in [docs/release-readiness.md](docs/release-readiness.md).
+## Docs
+
+- [Engineering principles](docs/PRINCIPLES.md)
+- [Rules](docs/RULES.md)
+- [Precision report](docs/PRECISION.md)
+- [Benchmarks](docs/BENCHMARKS.md)
+- [Release process](docs/RELEASE.md)
+- [Release readiness](docs/release-readiness.md)
+- [Contributing](docs/CONTRIBUTING.md)
+
+Marketing site: [layergrid.ai](https://layergrid.ai)
 
 ## License
 

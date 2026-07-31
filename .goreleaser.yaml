@@ -42,6 +42,7 @@ homebrew_casks:
     repository:
       owner: layergrid
       name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Casks
     homepage: https://github.com/layergrid/layergrid-cli
     description: Offline static scanner for AI agent stack trifecta risks
@@ -58,7 +59,7 @@ signs:
       - --output-certificate=${certificate}
       - --output-signature=${signature}
       - ${artifact}
-    artifacts: checksum
+    artifacts: all
 
 release:
   github:

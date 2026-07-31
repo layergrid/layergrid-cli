@@ -1,0 +1,8 @@
+version: 1
+exclude:
+  - testdata/**
+  - dist/**
+  - bin/**
+  - .gocache/**
+  - .gomodcache/**
+fail_on: high
