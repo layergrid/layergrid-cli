@@ -70,6 +70,19 @@ func TestRunConfigCanDisableRule(t *testing.T) {
 	assertFinding(t, result, "LG-LETHAL-TRIFECTA-01")
 }
 
+func TestRunHonorsExcludePatterns(t *testing.T) {
+	result, err := Run(filepath.Join("..", "..", "testdata", "langchain-trifecta"), Options{Exclude: []string{"agent.py"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Stack.Agents) != 0 {
+		t.Fatalf("agents = %d, want 0", len(result.Stack.Agents))
+	}
+	if len(result.Findings) != 0 {
+		t.Fatalf("findings = %d, want 0", len(result.Findings))
+	}
+}
+
 func assertFinding(t *testing.T, result Result, ruleID string) {
 	t.Helper()
 	for _, f := range result.Findings {

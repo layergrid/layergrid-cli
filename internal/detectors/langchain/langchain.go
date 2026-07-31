@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/layergrid/layergrid-cli/internal/detectors/detectopts"
+	"github.com/layergrid/layergrid-cli/internal/detectors/pyutil"
 	"github.com/layergrid/layergrid-cli/internal/model"
 )
 
@@ -18,8 +20,8 @@ func New() Detector { return Detector{} }
 func (Detector) Name() string               { return "langchain" }
 func (Detector) Framework() model.Framework { return model.FrameworkLangChain }
 
-func (d Detector) Detect(root string, s *model.Stack) error {
-	return walkPython(root, func(path string) error {
+func (d Detector) Detect(root string, s *model.Stack, opts detectopts.Options) error {
+	return walkPython(root, opts, func(path string) error {
 		return d.detectFile(root, path, s)
 	})
 }
@@ -200,11 +202,11 @@ func localFunctionBlock(lines []string, start int) string {
 	return strings.Join(lines[start:end], "\n")
 }
 
-func walkPython(root string, visit func(path string) error) error {
-	return filepathWalk(root, ".py", visit)
+func walkPython(root string, opts detectopts.Options, visit func(path string) error) error {
+	return filepathWalk(root, ".py", opts, visit)
 }
 
-func filepathWalk(root, suffix string, visit func(path string) error) error {
+func filepathWalk(root, suffix string, opts detectopts.Options, visit func(path string) error) error {
 	return filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -217,6 +219,9 @@ func filepathWalk(root, suffix string, visit func(path string) error) error {
 			return nil
 		}
 		if strings.HasSuffix(path, suffix) {
+			if !pyutil.Included(root, path, opts.Include, opts.Exclude) {
+				return nil
+			}
 			return visit(path)
 		}
 		return nil

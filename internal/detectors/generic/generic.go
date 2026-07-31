@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/layergrid/layergrid-cli/internal/detectors/detectopts"
+	"github.com/layergrid/layergrid-cli/internal/detectors/pyutil"
 	"github.com/layergrid/layergrid-cli/internal/model"
 )
 
@@ -16,7 +18,7 @@ func New() Detector { return Detector{} }
 func (Detector) Name() string               { return "generic" }
 func (Detector) Framework() model.Framework { return model.FrameworkCustom }
 
-func (Detector) Detect(root string, s *model.Stack) error {
+func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) error {
 	return filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -29,6 +31,9 @@ func (Detector) Detect(root string, s *model.Stack) error {
 			return nil
 		}
 		if !strings.HasSuffix(path, ".py") {
+			return nil
+		}
+		if !pyutil.Included(root, path, opts.Include, opts.Exclude) {
 			return nil
 		}
 		return scanPython(root, path, s)

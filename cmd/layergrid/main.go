@@ -63,6 +63,8 @@ func rootCmd() *cobra.Command {
 	scanCmd.Flags().StringVarP(&opts.Output, "output", "o", "", "write output to path")
 	scanCmd.Flags().StringVar(&opts.FailOn, "fail-on", "never", "critical, high, medium, low, or never")
 	scanCmd.Flags().StringVar(&opts.ConfigPath, "config", "", "path to .layergrid.yaml")
+	scanCmd.Flags().StringSliceVar(&opts.Include, "include", nil, "include glob patterns")
+	scanCmd.Flags().StringSliceVar(&opts.Exclude, "exclude", nil, "exclude glob patterns")
 	scanCmd.Flags().StringSliceVar(&opts.Frameworks, "frameworks", nil, "only run selected detectors")
 	scanCmd.Flags().StringSliceVar(&opts.Rules, "rules", nil, "only evaluate selected rule IDs or categories")
 	scanCmd.Flags().BoolVar(&opts.NoColor, "no-color", false, "disable color")

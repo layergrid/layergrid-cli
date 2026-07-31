@@ -3,6 +3,7 @@ package llamaindex
 import (
 	"strings"
 
+	"github.com/layergrid/layergrid-cli/internal/detectors/detectopts"
 	"github.com/layergrid/layergrid-cli/internal/detectors/pyutil"
 	"github.com/layergrid/layergrid-cli/internal/model"
 )
@@ -14,8 +15,8 @@ func New() Detector { return Detector{} }
 func (Detector) Name() string               { return "llamaindex" }
 func (Detector) Framework() model.Framework { return model.FrameworkLlamaIndex }
 
-func (Detector) Detect(root string, s *model.Stack) error {
-	return pyutil.Walk(root, func(path string, lines []string) error {
+func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) error {
+	return pyutil.Walk(root, opts.Include, opts.Exclude, func(path string, lines []string) error {
 		if !pyutil.HasAny(lines, "llama_index", "llamaindex") {
 			return nil
 		}

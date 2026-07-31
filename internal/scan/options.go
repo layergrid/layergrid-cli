@@ -8,6 +8,8 @@ type Options struct {
 	NoColor    bool
 	Verbose    bool
 	Quiet      bool
+	Include    []string
+	Exclude    []string
 	Frameworks []string
 	Rules      []string
 }

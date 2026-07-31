@@ -1,5 +1,6 @@
 bin/
 .gocache/
+.gomodcache/
 coverage.out
 dist/
 .DS_Store

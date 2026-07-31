@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/layergrid/layergrid-cli/internal/detectors/detectopts"
+	"github.com/layergrid/layergrid-cli/internal/detectors/pyutil"
 	"github.com/layergrid/layergrid-cli/internal/model"
 )
 
@@ -29,7 +31,7 @@ type serverConfig struct {
 	Auth    string            `json:"auth"`
 }
 
-func (Detector) Detect(root string, s *model.Stack) error {
+func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) error {
 	names := map[string]bool{
 		"mcp.json": true, "mcp_config.json": true, "claude_desktop_config.json": true, "mcp-servers.json": true,
 	}
@@ -45,6 +47,9 @@ func (Detector) Detect(root string, s *model.Stack) error {
 			return nil
 		}
 		if names[d.Name()] || strings.HasSuffix(filepath.ToSlash(path), "/.cursor/mcp.json") || strings.HasSuffix(filepath.ToSlash(path), "/.vscode/mcp.json") {
+			if !pyutil.Included(root, path, opts.Include, opts.Exclude) {
+				return nil
+			}
 			if err := detectConfig(root, path, s); err != nil {
 				s.Errors = append(s.Errors, model.ScanError{Detector: "mcp", Message: err.Error(), Location: model.RelativeLocation(root, path, 1)})
 			}

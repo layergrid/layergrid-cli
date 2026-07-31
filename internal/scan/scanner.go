@@ -8,6 +8,7 @@ import (
 
 	"github.com/layergrid/layergrid-cli/internal/config"
 	"github.com/layergrid/layergrid-cli/internal/detectors"
+	"github.com/layergrid/layergrid-cli/internal/detectors/detectopts"
 	"github.com/layergrid/layergrid-cli/internal/graph"
 	"github.com/layergrid/layergrid-cli/internal/model"
 	"github.com/layergrid/layergrid-cli/internal/trifecta"
@@ -61,7 +62,7 @@ func Run(path string, opts Options) (Result, error) {
 		if !enabledDetector(detector, opts.Frameworks) {
 			continue
 		}
-		runDetector(root, detector, &stack)
+		runDetector(root, detector, detectopts.Options{Include: opts.Include, Exclude: opts.Exclude}, &stack)
 	}
 	g := graph.Build(&stack)
 	rules, err := trifecta.LoadBuiltinRules()
@@ -81,6 +82,12 @@ func mergeConfig(opts Options, cfg config.Config) Options {
 	if len(opts.Frameworks) == 0 {
 		opts.Frameworks = cfg.Frameworks
 	}
+	if len(opts.Include) == 0 {
+		opts.Include = cfg.Include
+	}
+	if len(opts.Exclude) == 0 {
+		opts.Exclude = cfg.Exclude
+	}
 	if len(opts.Rules) == 0 && len(cfg.Rules.Categories) > 0 {
 		opts.Rules = cfg.Rules.Categories
 	}
@@ -98,7 +105,7 @@ func disabledMarkers(ids []string) []string {
 	return out
 }
 
-func runDetector(root string, detector detectors.Detector, stack *model.Stack) {
+func runDetector(root string, detector detectors.Detector, opts detectopts.Options, stack *model.Stack) {
 	defer func() {
 		if r := recover(); r != nil {
 			stack.Errors = append(stack.Errors, model.ScanError{
@@ -107,7 +114,7 @@ func runDetector(root string, detector detectors.Detector, stack *model.Stack) {
 			})
 		}
 	}()
-	if err := detector.Detect(root, stack); err != nil {
+	if err := detector.Detect(root, stack, opts); err != nil {
 		stack.Errors = append(stack.Errors, model.ScanError{Detector: detector.Name(), Message: err.Error()})
 	}
 }
