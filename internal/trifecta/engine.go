@@ -216,7 +216,8 @@ func pathForAgent(agent model.Agent, toolsByID map[string]model.Tool) []PathNode
 func finding(rule Rule, kind, id, name string, loc model.Location, path []PathNode, rationale string) Finding {
 	f := Finding{
 		RuleID: rule.ID, RuleName: rule.Name, Severity: rule.Severity,
-		Subject: Subject{Kind: kind, ID: id, Name: name}, Path: path,
+		Category: rule.Category,
+		Subject:  Subject{Kind: kind, ID: id, Name: name}, Path: path,
 		Location: loc, Fix: rule.Fix, References: rule.References,
 		ScoreImpact: rule.ScoreImpact, Rationale: rationale,
 	}

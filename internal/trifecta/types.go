@@ -38,6 +38,7 @@ type Finding struct {
 	ID          string         `json:"id"`
 	RuleID      string         `json:"ruleId"`
 	RuleName    string         `json:"ruleName"`
+	Category    string         `json:"category"`
 	Severity    Severity       `json:"severity"`
 	Subject     Subject        `json:"subject"`
 	Path        []PathNode     `json:"path,omitempty"`
