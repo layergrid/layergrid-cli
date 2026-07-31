@@ -1,0 +1,9 @@
+id: LG-TOOL-CODE-EXEC-01
+name: Agent has code-execution tool
+severity: high
+category: permissions
+description: Agent code execution increases prompt-injection impact and data exfiltration risk.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Disable code execution or isolate it in a sandboxed agent with no sensitive data access.
+score_impact: -15

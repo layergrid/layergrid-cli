@@ -1,0 +1,9 @@
+id: LG-AGENT-NO-GUARDRAIL-01
+name: Agent has external tools but no guardrail middleware
+severity: medium
+category: permissions
+description: Agent has external communication tools and no detected guardrail middleware.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Add an output validation or approval layer before external actions.
+score_impact: -5

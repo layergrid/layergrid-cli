@@ -1,0 +1,54 @@
+version: 2
+
+project_name: layergrid
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: layergrid
+    main: ./cmd/layergrid
+    binary: layergrid
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/layergrid/layergrid/internal/version.Version={{.Version}}
+      - -X github.com/layergrid/layergrid/internal/version.Commit={{.Commit}}
+      - -X github.com/layergrid/layergrid/internal/version.Date={{.Date}}
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+sboms:
+  - artifacts: archive
+
+signs:
+  - cmd: cosign
+    certificate: '${artifact}.pem'
+    args:
+      - sign-blob
+      - --yes
+      - --output-certificate=${certificate}
+      - --output-signature=${signature}
+      - ${artifact}
+    artifacts: checksum
+
+release:
+  github:
+    owner: layergrid
+    name: layergrid

@@ -1,0 +1,9 @@
+id: LG-MCP-PUBLISHER-UNKNOWN-01
+name: MCP server from unverified publisher
+severity: medium
+category: mcp
+description: MCP server publisher could not be identified from the local config.
+references:
+  - https://modelcontextprotocol.io
+fix: Pin the MCP package to a verified publisher and version, or document the internal publisher.
+score_impact: -5

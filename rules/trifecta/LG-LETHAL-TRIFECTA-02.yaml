@@ -1,0 +1,9 @@
+id: LG-LETHAL-TRIFECTA-02
+name: Multi-agent lethal trifecta via shared memory
+severity: critical
+category: trifecta
+description: Multiple agents appear connected by shared memory and collectively satisfy all three lethal-trifecta legs.
+references:
+  - https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+fix: Remove shared memory between agents that handle untrusted input and agents that can read sensitive data or communicate externally.
+score_impact: -30

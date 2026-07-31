@@ -1,0 +1,9 @@
+id: LG-AUTOGEN-LOCAL-EXEC-01
+name: AutoGen LocalCommandLineCodeExecutor detected
+severity: critical
+category: permissions
+description: AutoGen local command execution allows broad system access from agent flows.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Disable LocalCommandLineCodeExecutor or replace it with a locked-down sandbox executor.
+score_impact: -30

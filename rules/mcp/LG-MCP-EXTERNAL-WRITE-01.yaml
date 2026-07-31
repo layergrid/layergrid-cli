@@ -1,0 +1,9 @@
+id: LG-MCP-EXTERNAL-WRITE-01
+name: External MCP and sensitive data reader in same agent
+severity: high
+category: mcp
+description: An agent appears to combine sensitive-data reads with an external MCP write channel.
+references:
+  - https://modelcontextprotocol.io
+fix: Put external MCP write tools in a separate agent that cannot read sensitive data.
+score_impact: -15

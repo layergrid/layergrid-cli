@@ -1,0 +1,9 @@
+id: LG-MEMORY-CROSS-USER-01
+name: Shared memory backend across users detected
+severity: high
+category: memory
+description: Cross-user shared memory can allow one user to poison another user's agent context.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Partition memory by tenant and user, and clear inherited context on boundary changes.
+score_impact: -15

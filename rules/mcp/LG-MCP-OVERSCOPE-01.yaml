@@ -1,0 +1,9 @@
+id: LG-MCP-OVERSCOPE-01
+name: MCP server registered with wildcard scope
+severity: high
+category: mcp
+description: An MCP server grants wildcard scope, making least-privilege review impossible.
+references:
+  - https://modelcontextprotocol.io
+fix: Replace wildcard scope with the minimum concrete scopes required by this agent.
+score_impact: -15

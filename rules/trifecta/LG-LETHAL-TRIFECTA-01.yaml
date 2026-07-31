@@ -1,0 +1,9 @@
+id: LG-LETHAL-TRIFECTA-01
+name: Single-agent lethal trifecta
+severity: critical
+category: trifecta
+description: A single agent combines sensitive data access, untrusted input, and an external communication channel.
+references:
+  - https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+fix: Split the agent so it either reads sensitive data or consumes untrusted content, and remove direct external write access from that trust boundary.
+score_impact: -30

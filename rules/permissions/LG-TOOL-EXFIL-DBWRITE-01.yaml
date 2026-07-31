@@ -1,0 +1,9 @@
+id: LG-TOOL-EXFIL-DBWRITE-01
+name: Agent has both sensitive-read and DB-write tools
+severity: high
+category: permissions
+description: An agent can read sensitive data and write to an external database.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Remove DB write access from agents that can read sensitive data.
+score_impact: -15

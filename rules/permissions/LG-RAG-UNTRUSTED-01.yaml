@@ -1,0 +1,9 @@
+id: LG-RAG-UNTRUSTED-01
+name: RAG source contains user-uploaded content without sanitization
+severity: high
+category: permissions
+description: User-uploaded RAG content can carry prompt-injection payloads into an agent.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Sanitize retrieved content and isolate retrieval agents from sensitive tools.
+score_impact: -15

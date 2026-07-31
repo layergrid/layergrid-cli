@@ -1,0 +1,9 @@
+id: LG-MCP-NOAUTH-01
+name: External MCP server with no auth mode
+severity: high
+category: mcp
+description: An externally reachable MCP server has no detected authentication mode.
+references:
+  - https://modelcontextprotocol.io
+fix: Require explicit authentication for this MCP server or remove the remote endpoint.
+score_impact: -15

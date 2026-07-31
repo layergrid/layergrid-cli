@@ -1,0 +1,9 @@
+id: LG-TOOL-SHELL-EXEC-01
+name: Agent has shell-execution tool
+severity: critical
+category: permissions
+description: Shell execution gives an agent a broad external communication and system mutation surface.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Remove shell execution or gate every command behind explicit human approval in an isolated environment.
+score_impact: -30

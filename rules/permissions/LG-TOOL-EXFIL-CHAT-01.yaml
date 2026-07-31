@@ -1,0 +1,9 @@
+id: LG-TOOL-EXFIL-CHAT-01
+name: Agent has both PII-read and chat-post tools
+severity: high
+category: permissions
+description: An agent can read sensitive data and post externally to chat.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Move chat posting into a separate agent that receives only sanitized summaries.
+score_impact: -15

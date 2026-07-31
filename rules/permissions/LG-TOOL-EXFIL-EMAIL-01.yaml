@@ -1,0 +1,9 @@
+id: LG-TOOL-EXFIL-EMAIL-01
+name: Agent has both inbox-read and email-send tools
+severity: high
+category: permissions
+description: An agent can read untrusted inbox content and send email externally.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Separate inbox reading from email sending, or require human approval before sending.
+score_impact: -15

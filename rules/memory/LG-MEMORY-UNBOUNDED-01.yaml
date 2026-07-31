@@ -1,0 +1,9 @@
+id: LG-MEMORY-UNBOUNDED-01
+name: Agent has persistent memory with no retention policy
+severity: medium
+category: memory
+description: Persistent memory without retention controls can preserve prompt-injection payloads and sensitive content.
+references:
+  - https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+fix: Add an explicit retention policy or disable persistent memory for this agent.
+score_impact: -5

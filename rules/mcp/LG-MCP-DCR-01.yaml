@@ -1,0 +1,9 @@
+id: LG-MCP-DCR-01
+name: MCP server uses OAuth Dynamic Client Registration
+severity: medium
+category: mcp
+description: OAuth Dynamic Client Registration can widen trust if not pinned and reviewed.
+references:
+  - https://modelcontextprotocol.io
+fix: Pin the MCP server to a static OAuth client registration.
+score_impact: -5

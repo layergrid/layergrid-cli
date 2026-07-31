@@ -1,0 +1,9 @@
+id: LG-LETHAL-TRIFECTA-03
+name: Cascade trifecta via sub-agent handoff
+severity: high
+category: trifecta
+description: A parent/sub-agent handoff path appears to combine lethal-trifecta capabilities.
+references:
+  - https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+fix: Break the handoff path or remove one trifecta leg from the sub-agent chain.
+score_impact: -15
