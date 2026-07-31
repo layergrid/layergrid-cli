@@ -2,8 +2,8 @@ package report
 
 import (
 	json "github.com/goccy/go-json"
-	"github.com/layergrid/layergrid/internal/scan"
-	"github.com/layergrid/layergrid/internal/version"
+	"github.com/layergrid/layergrid-cli/internal/scan"
+	"github.com/layergrid/layergrid-cli/internal/version"
 )
 
 type JSON struct{}

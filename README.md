@@ -14,6 +14,12 @@ go run ./cmd/layergrid list-rules
 go run ./cmd/layergrid explain LG-LETHAL-TRIFECTA-01
 ```
 
+Install from source:
+
+```sh
+go install github.com/layergrid/layergrid-cli/cmd/layergrid@latest
+```
+
 ## Engineering Principles
 
 - Deterministic scans: no LLM calls and no network calls in the scan path.

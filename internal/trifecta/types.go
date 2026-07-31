@@ -1,6 +1,6 @@
 package trifecta
 
-import "github.com/layergrid/layergrid/internal/model"
+import "github.com/layergrid/layergrid-cli/internal/model"
 
 type Severity string
 

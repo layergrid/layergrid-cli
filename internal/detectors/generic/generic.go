@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/layergrid/layergrid/internal/model"
+	"github.com/layergrid/layergrid-cli/internal/model"
 )
 
 type Detector struct{}
@@ -57,14 +57,26 @@ func scanPython(root, path string, s *model.Stack) error {
 			})
 		}
 		if looksHardcodedKey(line) {
-			s.Errors = append(s.Errors, model.ScanError{
-				Detector: "generic",
-				Message:  "possible hardcoded credential-like value; emitted as scan error pending precise rule support",
-				Location: model.RelativeLocation(root, path, lineNo),
-			})
+			s.Tools = append(s.Tools, evidenceTool(root, path, lineNo, "hardcoded-api-key", "hardcoded_key"))
+		}
+		if strings.Contains(lower, "os.environ") && (strings.Contains(lower, "token") || strings.Contains(lower, "key") || strings.Contains(lower, "secret")) {
+			s.Tools = append(s.Tools, evidenceTool(root, path, lineNo, "env-credential-read", "env_credential_inline"))
 		}
 	}
 	return scanner.Err()
+}
+
+func evidenceTool(root, path string, line int, name, marker string) model.Tool {
+	return model.Tool{
+		ID:         model.StableID("tool", "generic", path, name, marker),
+		Name:       name,
+		Kind:       model.ToolKindFunction,
+		Source:     model.ToolSource{Kind: "python", Name: path},
+		Location:   model.RelativeLocation(root, path, line),
+		Capability: model.Capability{ReadsData: model.DataSensitive, ReadsUntrusted: model.UntrustedNone, Writes: model.WriteNone, Exfil: model.ExfilNone},
+		Descriptor: model.Descriptor(name, marker),
+		Metadata:   map[string]string{"evidence": marker},
+	}
 }
 
 func providerFor(line string) string {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"html"
 
-	"github.com/layergrid/layergrid/internal/scan"
+	"github.com/layergrid/layergrid-cli/internal/scan"
 )
 
 type HTML struct{}

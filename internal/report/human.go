@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/layergrid/layergrid/internal/model"
-	"github.com/layergrid/layergrid/internal/scan"
-	"github.com/layergrid/layergrid/internal/trifecta"
+	"github.com/layergrid/layergrid-cli/internal/model"
+	"github.com/layergrid/layergrid-cli/internal/scan"
+	"github.com/layergrid/layergrid-cli/internal/trifecta"
 )
 
 type Human struct {

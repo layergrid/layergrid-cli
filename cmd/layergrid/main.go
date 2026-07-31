@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/layergrid/layergrid/internal/report"
-	"github.com/layergrid/layergrid/internal/scan"
-	"github.com/layergrid/layergrid/internal/trifecta"
-	"github.com/layergrid/layergrid/internal/version"
+	"github.com/layergrid/layergrid-cli/internal/report"
+	"github.com/layergrid/layergrid-cli/internal/scan"
+	"github.com/layergrid/layergrid-cli/internal/trifecta"
+	"github.com/layergrid/layergrid-cli/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -62,6 +62,7 @@ func rootCmd() *cobra.Command {
 	scanCmd.Flags().StringVarP(&opts.Format, "format", "f", "human", "human, json, sarif, html, or markdown")
 	scanCmd.Flags().StringVarP(&opts.Output, "output", "o", "", "write output to path")
 	scanCmd.Flags().StringVar(&opts.FailOn, "fail-on", "never", "critical, high, medium, low, or never")
+	scanCmd.Flags().StringVar(&opts.ConfigPath, "config", "", "path to .layergrid.yaml")
 	scanCmd.Flags().StringSliceVar(&opts.Frameworks, "frameworks", nil, "only run selected detectors")
 	scanCmd.Flags().StringSliceVar(&opts.Rules, "rules", nil, "only evaluate selected rule IDs or categories")
 	scanCmd.Flags().BoolVar(&opts.NoColor, "no-color", false, "disable color")

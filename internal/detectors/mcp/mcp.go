@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/layergrid/layergrid/internal/model"
+	"github.com/layergrid/layergrid-cli/internal/model"
 )
 
 type Detector struct{}

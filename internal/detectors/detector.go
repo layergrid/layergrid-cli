@@ -1,6 +1,6 @@
 package detectors
 
-import "github.com/layergrid/layergrid/internal/model"
+import "github.com/layergrid/layergrid-cli/internal/model"
 
 type Detector interface {
 	Name() string

@@ -39,3 +39,43 @@ func TestRunMCPFixture(t *testing.T) {
 		t.Fatal("expected wildcard MCP scope finding")
 	}
 }
+
+func TestRunAutoGenLocalExecFixture(t *testing.T) {
+	result, err := Run(filepath.Join("..", "..", "testdata", "autogen-local-exec"), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertFinding(t, result, "LG-AUTOGEN-LOCAL-EXEC-01")
+	assertFinding(t, result, "LG-TOOL-SHELL-EXEC-01")
+}
+
+func TestRunOpenAICodeInterpreterFixture(t *testing.T) {
+	result, err := Run(filepath.Join("..", "..", "testdata", "openai-code-interpreter"), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertFinding(t, result, "LG-TOOL-CODE-EXEC-01")
+}
+
+func TestRunConfigCanDisableRule(t *testing.T) {
+	result, err := Run(filepath.Join("..", "..", "testdata", "config-disable"), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range result.Findings {
+		if f.RuleID == "LG-AGENT-NO-GUARDRAIL-01" {
+			t.Fatal("expected config to disable LG-AGENT-NO-GUARDRAIL-01")
+		}
+	}
+	assertFinding(t, result, "LG-LETHAL-TRIFECTA-01")
+}
+
+func assertFinding(t *testing.T, result Result, ruleID string) {
+	t.Helper()
+	for _, f := range result.Findings {
+		if f.RuleID == ruleID {
+			return
+		}
+	}
+	t.Fatalf("expected finding %s, got %#v", ruleID, result.Findings)
+}

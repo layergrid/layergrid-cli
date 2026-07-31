@@ -1,0 +1,4 @@
+version: 1
+rules:
+  disable:
+    - LG-AGENT-NO-GUARDRAIL-01

@@ -42,16 +42,17 @@ const (
 )
 
 type Tool struct {
-	ID          string     `json:"id"`
-	Name        string     `json:"name"`
-	Kind        ToolKind   `json:"kind"`
-	Source      ToolSource `json:"source"`
-	Location    Location   `json:"location"`
-	Capability  Capability `json:"capability"`
-	Scope       []string   `json:"scope,omitempty"`
-	MCPServerID string     `json:"mcpServerId,omitempty"`
-	Description string     `json:"description,omitempty"`
-	Descriptor  string     `json:"descriptor"`
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Kind        ToolKind          `json:"kind"`
+	Source      ToolSource        `json:"source"`
+	Location    Location          `json:"location"`
+	Capability  Capability        `json:"capability"`
+	Scope       []string          `json:"scope,omitempty"`
+	MCPServerID string            `json:"mcpServerId,omitempty"`
+	Description string            `json:"description,omitempty"`
+	Descriptor  string            `json:"descriptor"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
 type ToolKind string

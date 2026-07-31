@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/layergrid/layergrid/internal/model"
+	"github.com/layergrid/layergrid-cli/internal/model"
 )
 
 type Detector struct{}
@@ -138,7 +138,22 @@ func makeTool(root, path string, line int, name string, block string) model.Tool
 		Location:   model.RelativeLocation(root, path, line),
 		Capability: cap,
 		Descriptor: model.Descriptor(name, block),
+		Metadata:   evidence(lower),
 	}
+}
+
+func evidence(lower string) map[string]string {
+	m := map[string]string{}
+	if strings.Contains(lower, "os.environ") && (strings.Contains(lower, "token") || strings.Contains(lower, "key") || strings.Contains(lower, "secret")) {
+		m["evidence"] = "env_credential_inline"
+	}
+	if strings.Contains(lower, "\"sk-") || strings.Contains(lower, "'sk-") || strings.Contains(lower, "ghp_") {
+		m["evidence"] = "hardcoded_key"
+	}
+	if len(m) == 0 {
+		return nil
+	}
+	return m
 }
 
 func refs(m map[string]string) []model.ToolRef {

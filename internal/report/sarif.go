@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/layergrid/layergrid/internal/scan"
+	"github.com/layergrid/layergrid-cli/internal/scan"
 )
 
 type SARIF struct{}
 
 func (SARIF) Format(r scan.Result) ([]byte, error) {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, `{"version":"2.1.0","$schema":"https://json.schemastore.org/sarif-2.1.0.json","runs":[{"tool":{"driver":{"name":"LayerGrid","informationUri":"https://github.com/layergrid/layergrid","rules":[]}},"results":[`)
+	fmt.Fprintf(&b, `{"version":"2.1.0","$schema":"https://json.schemastore.org/sarif-2.1.0.json","runs":[{"tool":{"driver":{"name":"LayerGrid","informationUri":"https://github.com/layergrid/layergrid-cli","rules":[]}},"results":[`)
 	for i, f := range r.Findings {
 		if i > 0 {
 			fmt.Fprintf(&b, ",")

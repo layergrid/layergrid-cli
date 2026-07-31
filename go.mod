@@ -1,4 +1,4 @@
-module github.com/layergrid/layergrid
+module github.com/layergrid/layergrid-cli
 
 go 1.22
 

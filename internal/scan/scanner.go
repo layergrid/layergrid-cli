@@ -6,10 +6,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/layergrid/layergrid/internal/detectors"
-	"github.com/layergrid/layergrid/internal/graph"
-	"github.com/layergrid/layergrid/internal/model"
-	"github.com/layergrid/layergrid/internal/trifecta"
+	"github.com/layergrid/layergrid-cli/internal/config"
+	"github.com/layergrid/layergrid-cli/internal/detectors"
+	"github.com/layergrid/layergrid-cli/internal/graph"
+	"github.com/layergrid/layergrid-cli/internal/model"
+	"github.com/layergrid/layergrid-cli/internal/trifecta"
 )
 
 type Result struct {
@@ -35,6 +36,13 @@ func Run(path string, opts Options) (Result, error) {
 	}
 	if !info.IsDir() {
 		return Result{}, fmt.Errorf("%s is not a directory", root)
+	}
+	cfg, hasConfig, err := config.Load(root, opts.ConfigPath)
+	if err != nil {
+		return Result{}, err
+	}
+	if hasConfig {
+		opts = mergeConfig(opts, cfg)
 	}
 
 	start := time.Now().UTC()
@@ -66,6 +74,30 @@ func Run(path string, opts Options) (Result, error) {
 	return Result{Stack: stack, Graph: g, Findings: findings, Score: score, Duration: time.Since(start), StartedAt: start}, nil
 }
 
+func mergeConfig(opts Options, cfg config.Config) Options {
+	if opts.FailOn == "" || opts.FailOn == "never" {
+		opts.FailOn = cfg.FailOn
+	}
+	if len(opts.Frameworks) == 0 {
+		opts.Frameworks = cfg.Frameworks
+	}
+	if len(opts.Rules) == 0 && len(cfg.Rules.Categories) > 0 {
+		opts.Rules = cfg.Rules.Categories
+	}
+	if len(cfg.Rules.Disable) > 0 {
+		opts.Rules = append(opts.Rules, disabledMarkers(cfg.Rules.Disable)...)
+	}
+	return opts
+}
+
+func disabledMarkers(ids []string) []string {
+	out := make([]string, 0, len(ids))
+	for _, id := range ids {
+		out = append(out, "!"+id)
+	}
+	return out
+}
+
 func runDetector(root string, detector detectors.Detector, stack *model.Stack) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -93,12 +125,30 @@ func enabledDetector(detector detectors.Detector, filters []string) bool {
 }
 
 func filterRules(rules []trifecta.Rule, filters []string) []trifecta.Rule {
-	if len(filters) == 0 {
-		return rules
+	disabled := map[string]bool{}
+	var includes []string
+	for _, f := range filters {
+		if len(f) > 1 && f[0] == '!' {
+			disabled[f[1:]] = true
+		} else {
+			includes = append(includes, f)
+		}
+	}
+	if len(includes) == 0 {
+		out := make([]trifecta.Rule, 0, len(rules))
+		for _, rule := range rules {
+			if !disabled[rule.ID] {
+				out = append(out, rule)
+			}
+		}
+		return out
 	}
 	var out []trifecta.Rule
 	for _, rule := range rules {
-		for _, f := range filters {
+		if disabled[rule.ID] {
+			continue
+		}
+		for _, f := range includes {
 			if f == rule.ID || f == rule.Category {
 				out = append(out, rule)
 				break

@@ -1,6 +1,6 @@
 package graph
 
-import "github.com/layergrid/layergrid/internal/model"
+import "github.com/layergrid/layergrid-cli/internal/model"
 
 type NodeKind string
 

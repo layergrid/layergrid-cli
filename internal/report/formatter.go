@@ -1,6 +1,6 @@
 package report
 
-import "github.com/layergrid/layergrid/internal/scan"
+import "github.com/layergrid/layergrid-cli/internal/scan"
 
 type Formatter interface {
 	Format(scan.Result) ([]byte, error)

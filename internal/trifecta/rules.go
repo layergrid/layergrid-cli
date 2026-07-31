@@ -4,7 +4,7 @@ import (
 	"io/fs"
 	"sort"
 
-	builtinrules "github.com/layergrid/layergrid/rules"
+	builtinrules "github.com/layergrid/layergrid-cli/rules"
 	"gopkg.in/yaml.v3"
 )
 
