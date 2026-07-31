@@ -14,6 +14,8 @@ LayerGrid is an offline static scanner for AI agent stacks. It discovers agents,
 
 Pre-release candidate work. The scanner is local-only and has no cloud dependency or telemetry.
 
+Public Trifecta Score reports and leaderboard: [trifecta.report](https://trifecta.report) (coming soon).
+
 ## Quick Start
 
 ```sh

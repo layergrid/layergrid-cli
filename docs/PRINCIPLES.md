@@ -30,6 +30,8 @@ The core CLI is Go and ships as a static binary. No Python, Node, Ruby, Docker, 
 
 JSON includes `schemaVersion` and `rubricVersion`. Finding IDs are deterministic so suppressions and score trends can work across runs.
 
+Public Trifecta Score reports and leaderboard will live at [trifecta.report](https://trifecta.report) (coming soon).
+
 ## Human-Readable
 
 The default report should be screenshotable and understandable without opening a dashboard.
