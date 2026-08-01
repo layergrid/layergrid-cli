@@ -1,12 +1,9 @@
 # LayerGrid CLI
 
-> Logo: `LG` wordmark placeholder until final brand assets land.
-
 [![Version](https://img.shields.io/github/v/release/layergrid/layergrid-cli?label=version)](https://github.com/layergrid/layergrid-cli/releases)
 [![Cosign signed](https://img.shields.io/badge/cosign-signed-blue)](docs/RELEASE.md)
 [![License](https://img.shields.io/github/license/layergrid/layergrid-cli)](LICENSE)
 [![CI](https://github.com/layergrid/layergrid-cli/actions/workflows/ci.yaml/badge.svg)](https://github.com/layergrid/layergrid-cli/actions/workflows/ci.yaml)
-[![Provenance](https://img.shields.io/badge/provenance-SLSA%20planned-lightgrey)](docs/RELEASE.md)
 
 LayerGrid is an offline static scanner for AI agent stacks. It discovers agents, tools, MCP servers, and risky capability composition, then reports a deterministic Trifecta Score.
 
