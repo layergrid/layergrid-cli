@@ -16,3 +16,16 @@ Check these before tagging `v0.1.0`.
 - [ ] RC tag is NOT the final tag; `v0.1.0` must tag from current main
 - [ ] `goreleaser check` passes
 - [ ] Signed release artifacts are verified post-cut
+
+## v0.1.0-rc.2 Status
+
+Cut from current `main` after terminal output polish, five additional detector rules, and `layergrid baseline`.
+
+- [ ] CI passes on the rc.2 source commit
+- [ ] Release workflow completes for `v0.1.0-rc.2`
+- [ ] Cosign produces `.sig` and `.pem` for every release artifact
+- [ ] `cosign verify-blob` succeeds for release artifacts
+- [ ] Homebrew tap formula updates to `v0.1.0-rc.2`
+- [ ] `brew upgrade layergrid` installs rc.2 and shows the new banner
+- [ ] Curl installer validates signatures and installs rc.2
+- [x] Dogfood scan on `layergrid-cli` passes at Grade A or B
