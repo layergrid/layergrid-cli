@@ -84,14 +84,19 @@ func (Detector) detectFile(root, path string, s *model.Stack) error {
 		}
 		if isAgentConstruction(trimmed) {
 			block := localFunctionBlock(lines, i)
+			memory, memoryReadOnly := inferMemory(block)
+			metadata := map[string]string{"detector": "langchain"}
+			if memoryReadOnly {
+				metadata["memory_read_only"] = "true"
+			}
 			agent := model.Agent{
 				ID:        model.StableID("agent", path, trimmed),
 				Name:      agentName(line),
 				Framework: model.FrameworkLangChain,
 				Location:  model.RelativeLocation(root, path, lineNo),
 				Tools:     refs(toolVarByName),
-				Memory:    inferMemory(block),
-				Metadata:  map[string]string{"detector": "langchain"},
+				Memory:    memory,
+				Metadata:  metadata,
 			}
 			s.Agents = append(s.Agents, agent)
 		}
@@ -115,11 +120,14 @@ func makeTool(root, path string, line int, name string, block string) model.Tool
 	if strings.Contains(lower, "rag") || strings.Contains(lower, "retriev") || strings.Contains(lower, "vector") || strings.Contains(lower, "upload") {
 		cap.ReadsUntrusted = model.UntrustedRAG
 	}
+	if readsInbox(lower) {
+		cap.ReadsUntrusted = model.UntrustedInbox
+	}
 	switch {
-	case strings.Contains(lower, "email") || strings.Contains(lower, "gmail"):
+	case exfilsEmail(lower):
 		cap.Writes = model.WriteExternal
 		cap.Exfil = model.ExfilEmail
-	case strings.Contains(lower, "slack") || strings.Contains(lower, "discord") || strings.Contains(lower, "teams") || strings.Contains(lower, "chat"):
+	case exfilsChat(lower):
 		cap.Writes = model.WriteExternal
 		cap.Exfil = model.ExfilChat
 	case strings.Contains(lower, "post") || strings.Contains(lower, "send") || strings.Contains(lower, "webhook"):
@@ -134,15 +142,44 @@ func makeTool(root, path string, line int, name string, block string) model.Tool
 		kind = model.ToolKindShell
 	}
 	return model.Tool{
-		ID:         model.StableID("tool", path, name, block),
-		Name:       name,
-		Kind:       kind,
-		Source:     model.ToolSource{Kind: "python", Name: path},
-		Location:   model.RelativeLocation(root, path, line),
-		Capability: cap,
-		Descriptor: model.Descriptor(name, block),
-		Metadata:   evidence(lower),
+		ID:          model.StableID("tool", path, name, block),
+		Name:        name,
+		Kind:        kind,
+		Source:      model.ToolSource{Kind: "python", Name: path},
+		Location:    model.RelativeLocation(root, path, line),
+		Capability:  cap,
+		Description: docstring(block),
+		Descriptor:  model.Descriptor(name, block),
+		Metadata:    evidence(lower),
 	}
+}
+
+func readsInbox(lower string) bool {
+	signals := []string{
+		"gmailtoolkit", "gmail toolkit", "messages.list", "gmail.read",
+		"slack conversations", "conversations.history", "conversations/read",
+		"outlook", "zendesk", "tickets.list", "intercom", "jira issues.search",
+		"linear mcp read", "inbox",
+	}
+	for _, signal := range signals {
+		if strings.Contains(lower, signal) {
+			return true
+		}
+	}
+	return false
+}
+
+func exfilsEmail(lower string) bool {
+	return strings.Contains(lower, "gmail.send") ||
+		strings.Contains(lower, "send_email") ||
+		strings.Contains(lower, "send email") ||
+		((strings.Contains(lower, "email") || strings.Contains(lower, "gmail")) && (strings.Contains(lower, "send") || strings.Contains(lower, "post")))
+}
+
+func exfilsChat(lower string) bool {
+	return strings.Contains(lower, "slackpostmessage") ||
+		strings.Contains(lower, "chat.postmessage") ||
+		((strings.Contains(lower, "slack") || strings.Contains(lower, "discord") || strings.Contains(lower, "teams") || strings.Contains(lower, "chat")) && (strings.Contains(lower, "send") || strings.Contains(lower, "post")))
 }
 
 func evidence(lower string) map[string]string {
@@ -190,9 +227,36 @@ func agentName(line string) string {
 	return "langchain-agent"
 }
 
-func inferMemory(text string) model.MemoryConfig {
+func inferMemory(text string) (model.MemoryConfig, bool) {
 	joined := strings.ToLower(text)
-	return model.MemoryConfig{Persistent: strings.Contains(joined, "memory"), Backend: ""}
+	memory := model.MemoryConfig{Persistent: strings.Contains(joined, "memory"), Backend: ""}
+	for _, backend := range []string{"pinecone", "weaviate", "qdrant", "supabase", "chroma"} {
+		if strings.Contains(joined, backend) {
+			memory.Persistent = true
+			memory.Backend = backend
+			break
+		}
+	}
+	if url := regexp.MustCompile(`https?://[^"'\s,)]+`).FindString(joined); url != "" {
+		memory.Persistent = true
+		memory.Backend = url
+	}
+	readOnly := strings.Contains(joined, "read_only=true") || strings.Contains(joined, "readonly=true") || strings.Contains(joined, "read-only")
+	return memory, readOnly
+}
+
+func docstring(block string) string {
+	re := regexp.MustCompile(`(?s)(?:"""(.*?)"""|'''(.*?)''')`)
+	m := re.FindStringSubmatch(block)
+	if len(m) == 0 {
+		return ""
+	}
+	for _, group := range m[1:] {
+		if group != "" {
+			return strings.TrimSpace(group)
+		}
+	}
+	return ""
 }
 
 func localFunctionBlock(lines []string, start int) string {

@@ -7,6 +7,8 @@
 
 LayerGrid is an offline static scanner for AI agent stacks. It discovers agents, tools, MCP servers, and risky capability composition, then reports a deterministic Trifecta Score.
 
+![LayerGrid welcome banner](docs/media/banner.png)
+
 ![LayerGrid scan screenshot](docs/media/first-scan.png)
 
 ## Install
@@ -38,9 +40,9 @@ Public Trifecta Score reports and leaderboard: [trifecta.report](https://trifect
 ## Quick Start
 
 ```sh
-go run ./cmd/layergrid scan .
-go run ./cmd/layergrid list-rules
-go run ./cmd/layergrid explain LG-LETHAL-TRIFECTA-01
+layergrid scan .
+layergrid list-rules
+layergrid explain LG-LETHAL-TRIFECTA-01
 ```
 
 ## Example

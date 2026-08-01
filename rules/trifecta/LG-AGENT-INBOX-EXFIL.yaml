@@ -1,0 +1,9 @@
+id: LG-AGENT-INBOX-EXFIL
+name: Inbox reader with exfiltration tool
+severity: high
+category: trifecta
+description: Agent combines untrusted inbox reads with a separate outbound exfiltration channel.
+references:
+  - https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+fix: Split inbox-reading and outbound-writing tools across separate agents or require explicit human approval before sending.
+score_impact: -15

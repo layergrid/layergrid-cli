@@ -3,6 +3,7 @@ package report
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,7 +13,85 @@ import (
 )
 
 func TestHumanOutputGolden(t *testing.T) {
-	result := scan.Result{
+	got := renderHuman(t, sampleResult(), 100)
+	assertGolden(t, "human-output.txt", got)
+}
+
+func TestHumanEmptyState(t *testing.T) {
+	result := sampleResult()
+	result.Findings = nil
+	result.Score = trifecta.Score{Value: 100, Grade: "A", Counts: severityCounts(0, 0, 0, 0)}
+	got := renderHuman(t, result, 100)
+	assertGolden(t, "human-empty.txt", got)
+	if strings.Contains(got, "Attack Paths") {
+		t.Fatalf("empty output should not include attack paths:\n%s", got)
+	}
+}
+
+func TestHumanSoloAgentAttackPath(t *testing.T) {
+	result := sampleResult()
+	result.Findings = []trifecta.Finding{{
+		RuleID: "LG-TOOL-CODE-EXEC-01", Severity: trifecta.SeverityHigh, ScoreImpact: -15,
+		Subject:   trifecta.Subject{Name: "autogen-runner"},
+		Location:  model.Location{Path: "agents/runner.py", Line: 22},
+		Fix:       "sandbox or remove code executor",
+		Rationale: "agent can execute local code",
+	}}
+	result.Score = trifecta.Score{Value: 85, Grade: "B", Counts: severityCounts(0, 1, 0, 0)}
+	got := renderHuman(t, result, 100)
+	assertGolden(t, "human-solo.txt", got)
+	if !strings.Contains(got, "autogen-runner") {
+		t.Fatalf("solo-agent path missing subject:\n%s", got)
+	}
+}
+
+func TestHumanNarrowLayout(t *testing.T) {
+	got := renderHuman(t, sampleResult(), 70)
+	assertGolden(t, "human-narrow.txt", got)
+	if !strings.Contains(got, "\n  Breakdown\n") {
+		t.Fatalf("narrow output should stack breakdown below score:\n%s", got)
+	}
+}
+
+func TestHumanNoColorStripsANSI(t *testing.T) {
+	got := renderHuman(t, sampleResult(), 100)
+	if strings.Contains(got, "\x1b[") {
+		t.Fatalf("no-color output contains ANSI escapes:\n%s", got)
+	}
+	if !strings.Contains(got, "┌") || !strings.Contains(got, "╭") {
+		t.Fatalf("no-color output should keep Unicode table borders:\n%s", got)
+	}
+}
+
+func renderHuman(t *testing.T, result scan.Result, width int) string {
+	t.Helper()
+	got, err := (Human{NoColor: true, Width: width}).Format(result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(got)
+}
+
+func assertGolden(t *testing.T, name, got string) {
+	t.Helper()
+	path := filepath.Join("..", "..", "testdata", "golden", name)
+	if os.Getenv("UPDATE_GOLDEN") == "1" {
+		if err := os.WriteFile(path, []byte(got), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+	want, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != string(want) {
+		t.Fatalf("%s mismatch\n--- got ---\n%s\n--- want ---\n%s", name, got, want)
+	}
+}
+
+func sampleResult() scan.Result {
+	return scan.Result{
 		Stack: model.Stack{
 			Root: "/Users/nikhil/dev/my-app",
 			Agents: []model.Agent{
@@ -40,37 +119,16 @@ func TestHumanOutputGolden(t *testing.T) {
 				Fix:       "pin to static OAuth registration",
 			},
 		},
-		Score: trifecta.Score{
-			Value: 65, Grade: "C",
-			Counts: map[trifecta.Severity]int{trifecta.SeverityCritical: 1, trifecta.SeverityHigh: 0, trifecta.SeverityMedium: 1, trifecta.SeverityLow: 0},
-		},
+		Score:    trifecta.Score{Value: 65, Grade: "C", Counts: severityCounts(1, 0, 1, 0)},
 		Duration: 4200 * time.Millisecond,
-	}
-	got, err := (Human{}).Format(result)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want, err := os.ReadFile(filepath.Join("..", "..", "testdata", "golden", "human-output.txt"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(got) != string(want) {
-		t.Fatalf("human output mismatch\n--- got ---\n%s\n--- want ---\n%s", got, want)
 	}
 }
 
-func TestHumanNoColorUsesASCII(t *testing.T) {
-	result := scan.Result{
-		Stack: model.Stack{Root: "/repo", Agents: []model.Agent{{Framework: model.FrameworkLangChain}}, Tools: []model.Tool{}, MCPServers: []model.MCPServer{}, Datasources: []model.Datasource{}},
-		Score: trifecta.Score{Value: 100, Grade: "A", Counts: map[trifecta.Severity]int{trifecta.SeverityCritical: 0, trifecta.SeverityHigh: 0, trifecta.SeverityMedium: 0, trifecta.SeverityLow: 0}},
-	}
-	got, err := (Human{NoColor: true}).Format(result)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, r := range string(got) {
-		if r > 127 {
-			t.Fatalf("no-color output contains non-ASCII rune %q in:\n%s", r, got)
-		}
+func severityCounts(critical, high, medium, low int) map[trifecta.Severity]int {
+	return map[trifecta.Severity]int{
+		trifecta.SeverityCritical: critical,
+		trifecta.SeverityHigh:     high,
+		trifecta.SeverityMedium:   medium,
+		trifecta.SeverityLow:      low,
 	}
 }

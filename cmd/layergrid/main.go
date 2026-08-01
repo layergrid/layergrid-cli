@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/layergrid/layergrid-cli/internal/baseline"
 	"github.com/layergrid/layergrid-cli/internal/report"
 	"github.com/layergrid/layergrid-cli/internal/scan"
 	"github.com/layergrid/layergrid-cli/internal/trifecta"
@@ -26,7 +29,17 @@ func rootCmd() *cobra.Command {
 		Short:         "Static risk scanner for AI agent stacks",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return printBanner(cmd, opts.NoColor)
+		},
 	}
+	cmd.SetHelpFunc(func(helpCmd *cobra.Command, args []string) {
+		if helpCmd == cmd {
+			_ = printBanner(helpCmd, opts.NoColor)
+			return
+		}
+		_, _ = fmt.Fprint(helpCmd.OutOrStdout(), helpCmd.UsageString())
+	})
 	scanCmd := &cobra.Command{
 		Use:   "scan [path]",
 		Short: "Scan an agent stack",
@@ -71,6 +84,7 @@ func rootCmd() *cobra.Command {
 	scanCmd.Flags().BoolVarP(&opts.Verbose, "verbose", "v", false, "verbose output")
 	scanCmd.Flags().BoolVarP(&opts.Quiet, "quiet", "q", false, "suppress stdout")
 	cmd.AddCommand(scanCmd)
+	cmd.AddCommand(baselineCmd())
 
 	cmd.AddCommand(&cobra.Command{
 		Use:   "list-rules",
@@ -130,8 +144,126 @@ func rootCmd() *cobra.Command {
 		Short: "Write a starter .layergrid.yaml",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			const body = "version: 1\nexclude:\n  - node_modules/**\n  - .venv/**\n  - testdata/**\nfail_on: high\n"
-			return os.WriteFile(".layergrid.yaml", []byte(body), 0o644)
+			if err := os.WriteFile(".layergrid.yaml", []byte(body), 0o644); err != nil {
+				return err
+			}
+			if err := os.MkdirAll(".layergrid", 0o755); err != nil {
+				return err
+			}
+			const note = "# LayerGrid Baseline\n\nCommit `.layergrid/baseline.json` after running `layergrid baseline save` so later scans can compare trust-boundary drift.\n"
+			return os.WriteFile(filepath.Join(".layergrid", "README.md"), []byte(note), 0o644)
 		},
 	})
 	return cmd
+}
+
+func baselineCmd() *cobra.Command {
+	root := &cobra.Command{
+		Use:   "baseline",
+		Short: "Save and compare LayerGrid trust baselines",
+	}
+	var saveOpts scan.Options
+	var saveOutput string
+	save := &cobra.Command{
+		Use:   "save [path]",
+		Short: "Save a LayerGrid baseline",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path := "."
+			if len(args) == 1 {
+				path = args[0]
+			}
+			result, err := scan.Run(path, saveOpts)
+			if err != nil {
+				return err
+			}
+			if saveOutput == "" {
+				saveOutput = filepath.Join(".layergrid", "baseline.json")
+			}
+			if err := os.MkdirAll(filepath.Dir(saveOutput), 0o755); err != nil {
+				return err
+			}
+			b := baseline.FromStack(result.Stack, result.StartedAt)
+			if err := baseline.Save(saveOutput, b); err != nil {
+				return err
+			}
+			if !saveOpts.Quiet {
+				_, err = fmt.Fprintf(cmd.OutOrStdout(), "Saved baseline to %s\n", saveOutput)
+				return err
+			}
+			return nil
+		},
+	}
+	save.Flags().StringVarP(&saveOutput, "output", "o", "", "write baseline to path")
+	save.Flags().StringVar(&saveOpts.ConfigPath, "config", "", "path to .layergrid.yaml")
+	save.Flags().BoolVarP(&saveOpts.Quiet, "quiet", "q", false, "suppress stdout")
+	root.AddCommand(save)
+
+	var compareOpts scan.Options
+	var baselinePath string
+	var compareFormat string
+	var failOn string
+	compare := &cobra.Command{
+		Use:   "compare [path]",
+		Short: "Compare current scan to a saved LayerGrid baseline",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path := "."
+			if len(args) == 1 {
+				path = args[0]
+			}
+			if baselinePath == "" {
+				baselinePath = filepath.Join(".layergrid", "baseline.json")
+			}
+			before, err := baseline.Load(baselinePath)
+			if err != nil {
+				return err
+			}
+			result, err := scan.Run(path, compareOpts)
+			if err != nil {
+				return err
+			}
+			after := baseline.FromStack(result.Stack, result.StartedAt)
+			diff := baseline.Compare(before, after)
+			if !compareOpts.Quiet {
+				switch compareFormat {
+				case "json":
+					data, err := json.MarshalIndent(diff, "", "  ")
+					if err != nil {
+						return err
+					}
+					if _, err := fmt.Fprintln(cmd.OutOrStdout(), string(data)); err != nil {
+						return err
+					}
+				case "human", "":
+					if _, err := fmt.Fprint(cmd.OutOrStdout(), baseline.FormatHuman(diff)); err != nil {
+						return err
+					}
+				default:
+					return fmt.Errorf("unsupported baseline format %q", compareFormat)
+				}
+			}
+			if baseline.ShouldFail(diff, failOn) {
+				os.Exit(1)
+			}
+			return nil
+		},
+	}
+	compare.Flags().StringVar(&baselinePath, "baseline", "", "path to baseline JSON")
+	compare.Flags().StringVar(&failOn, "fail-on", "any", "scope-widening, tool-added, descriptor-drift, any, or never")
+	compare.Flags().StringVarP(&compareFormat, "format", "f", "human", "human or json")
+	compare.Flags().StringVar(&compareOpts.ConfigPath, "config", "", "path to .layergrid.yaml")
+	compare.Flags().BoolVarP(&compareOpts.Quiet, "quiet", "q", false, "suppress stdout")
+	root.AddCommand(compare)
+
+	return root
+}
+
+func printBanner(cmd *cobra.Command, noColor bool) error {
+	rules, err := trifecta.LoadBuiltinRules()
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprint(cmd.OutOrStdout(), report.Banner(report.BannerOptions{NoColor: noColor, RuleCount: len(rules)}))
+	return err
 }

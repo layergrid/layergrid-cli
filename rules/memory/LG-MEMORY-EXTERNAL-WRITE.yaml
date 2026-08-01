@@ -1,0 +1,9 @@
+id: LG-MEMORY-EXTERNAL-WRITE
+name: Writable external memory backend
+severity: medium
+category: memory
+description: Agent memory appears to write to an external managed backend without a read-only constraint.
+references:
+  - https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+fix: Make the memory backend read-only, scope it to localhost, or add retention and isolation controls.
+score_impact: -5

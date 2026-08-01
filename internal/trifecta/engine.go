@@ -93,6 +93,14 @@ func evaluateRule(rule Rule, s *model.Stack, toolsByID map[string]model.Tool, _ 
 			if len(agent.Guardrails) == 0 && hasExfil(caps) {
 				out = append(out, finding(rule, "agent", agent.ID, agent.Name, agent.Location, nil, "agent has external tools but no detected guardrail middleware"))
 			}
+		case "LG-AGENT-INBOX-EXFIL":
+			if hasUntrustedInbox(caps) && hasExfil(caps) {
+				out = append(out, finding(rule, "agent", agent.ID, agent.Name, agent.Location, pathForAgent(agent, toolsByID), "agent combines untrusted inbox reads with an outbound exfiltration tool"))
+			}
+		case "LG-MEMORY-EXTERNAL-WRITE":
+			if externalMemoryWrite(agent) {
+				out = append(out, finding(rule, "agent", agent.ID, agent.Name, agent.Location, nil, "agent memory writes appear to target an external managed backend"))
+			}
 		}
 	}
 	for _, tool := range s.Tools {
@@ -108,6 +116,10 @@ func evaluateRule(rule Rule, s *model.Stack, toolsByID map[string]model.Tool, _ 
 		case "LG-AUTOGEN-LOCAL-EXEC-01":
 			if tool.Metadata["evidence"] == "local-shell-exec" {
 				out = append(out, finding(rule, "tool", tool.ID, tool.Name, tool.Location, []PathNode{{Kind: "tool", ID: tool.ID, Name: tool.Name}}, "AutoGen LocalCommandLineCodeExecutor detected"))
+			}
+		case "LG-TOOL-UNICODE-HIDDEN":
+			if containsHiddenUnicode(tool.Description) {
+				out = append(out, finding(rule, "tool", tool.ID, tool.Name, tool.Location, []PathNode{{Kind: "tool", ID: tool.ID, Name: tool.Name}}, "tool description contains hidden Unicode control characters"))
 			}
 		}
 	}
@@ -129,9 +141,48 @@ func evaluateRule(rule Rule, s *model.Stack, toolsByID map[string]model.Tool, _ 
 			if server.AuthMode == model.MCPAuthOAuthDCR {
 				out = append(out, finding(rule, "mcp", server.ID, server.Name, server.Location, nil, "MCP server uses OAuth Dynamic Client Registration"))
 			}
+		case "LG-MCP-CREDENTIAL-IN-ENV":
+			if server.Metadata["env_credential_inline"] == "true" {
+				out = append(out, finding(rule, "mcp", server.ID, server.Name, server.Location, nil, "MCP env block contains a raw credential-like value"))
+			}
+		case "LG-MCP-EGRESS-UNBOUND":
+			if server.IsExternal && (server.Transport == "http" || server.Transport == "sse") && server.Metadata["egress_allowlist"] != "true" {
+				out = append(out, finding(rule, "mcp", server.ID, server.Name, server.Location, nil, "external MCP server has no detected egress allowlist or network scope"))
+			}
 		}
 	}
 	return out
+}
+
+func externalMemoryWrite(agent model.Agent) bool {
+	if !agent.Memory.Persistent || agent.Memory.Backend == "" || agent.Metadata["memory_read_only"] == "true" {
+		return false
+	}
+	backend := strings.ToLower(agent.Memory.Backend)
+	if strings.Contains(backend, "localhost") || strings.Contains(backend, "127.0.0.1") || strings.Contains(backend, "::1") {
+		return false
+	}
+	cloudSignals := []string{"http://", "https://", "pinecone", "weaviate", "qdrant", "supabase", "chroma"}
+	for _, signal := range cloudSignals {
+		if strings.Contains(backend, signal) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsHiddenUnicode(text string) bool {
+	for _, r := range text {
+		switch {
+		case r == '\u200b' || r == '\u200c' || r == '\u200d' || r == '\ufeff' || r == '\u00ad':
+			return true
+		case r >= '\u202a' && r <= '\u202e':
+			return true
+		case r >= '\u2066' && r <= '\u2069':
+			return true
+		}
+	}
+	return false
 }
 
 func stackHasSensitive(s *model.Stack) bool {

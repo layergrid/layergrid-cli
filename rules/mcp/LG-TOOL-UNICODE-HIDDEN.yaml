@@ -1,0 +1,9 @@
+id: LG-TOOL-UNICODE-HIDDEN
+name: Hidden Unicode in tool description
+severity: high
+category: mcp
+description: Tool description contains hidden Unicode control characters that can conceal instructions from human review.
+references:
+  - https://unicode.org/reports/tr36/
+fix: Remove zero-width and bidirectional control characters from tool descriptions and docstrings.
+score_impact: -15

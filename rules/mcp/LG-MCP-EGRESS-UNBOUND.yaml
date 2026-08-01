@@ -1,0 +1,9 @@
+id: LG-MCP-EGRESS-UNBOUND
+name: External MCP server without egress bounds
+severity: medium
+category: mcp
+description: External HTTP or SSE MCP server has no detected egress allowlist or network scope declaration.
+references:
+  - https://modelcontextprotocol.io
+fix: Declare allowedDomains or networkScope for the MCP server, or use stdio for local-only servers.
+score_impact: -5

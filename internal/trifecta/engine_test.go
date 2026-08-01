@@ -100,6 +100,10 @@ func seedRuleStack() model.Stack {
 			Capability: model.Capability{Writes: model.WriteExternal, Exfil: model.ExfilShell}, Metadata: map[string]string{"evidence": "local-shell-exec"},
 		},
 		{
+			ID: "hidden-unicode", Name: "hidden-unicode", Kind: model.ToolKindFunction, Location: loc("tools.py", 14),
+			Capability: model.Capability{}, Description: "Read inbox\u200b messages",
+		},
+		{
 			ID: "external-mcp-tool", Name: "remote-git-mcp", Kind: model.ToolKindMCP, MCPServerID: "external-mcp", Location: loc("mcp.json", 1),
 			Capability: model.Capability{ReadsData: model.DataSensitive, ReadsUntrusted: model.UntrustedMCP, Writes: model.WriteExternal, Exfil: model.ExfilGit},
 		},
@@ -107,8 +111,9 @@ func seedRuleStack() model.Stack {
 	agents := []model.Agent{
 		{
 			ID: "trifecta-agent", Name: "trifecta-agent", Framework: model.FrameworkLangChain, Location: loc("agents.py", 100),
-			Tools:  []model.ToolRef{"sensitive", "rag", "inbox", "email", "chat", "db", "code", "shell", "external-mcp-tool"},
-			Memory: model.MemoryConfig{Persistent: true, SharedAcrossUsers: true},
+			Tools:    []model.ToolRef{"sensitive", "rag", "inbox", "email", "chat", "db", "code", "shell", "external-mcp-tool", "hidden-unicode"},
+			Memory:   model.MemoryConfig{Persistent: true, Backend: "pinecone", SharedAcrossUsers: true},
+			Metadata: map[string]string{},
 		},
 		{
 			ID: "parent", Name: "parent", Framework: model.FrameworkCrewAI, Location: loc("crew.py", 10),
@@ -121,7 +126,7 @@ func seedRuleStack() model.Stack {
 		},
 	}
 	servers := []model.MCPServer{
-		{ID: "external-mcp", Name: "remote-git", Location: loc("mcp.json", 1), Scopes: []string{"*"}, AuthMode: model.MCPAuthNone, IsExternal: true, Publisher: "unknown"},
+		{ID: "external-mcp", Name: "remote-git", Location: loc("mcp.json", 1), Transport: "http", Scopes: []string{"*"}, AuthMode: model.MCPAuthNone, IsExternal: true, Publisher: "unknown", Metadata: map[string]string{"env_credential_inline": "true"}},
 		{ID: "dcr-mcp", Name: "oauth-dcr", Location: loc("mcp.json", 9), AuthMode: model.MCPAuthOAuthDCR, IsExternal: true, Publisher: "modelcontextprotocol"},
 	}
 	return model.Stack{Root: "/fixture", ScanID: "scan", Agents: agents, Tools: tools, MCPServers: servers}

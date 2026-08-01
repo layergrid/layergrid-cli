@@ -1,0 +1,61 @@
+╭──────────────────────────────────────────────────────────────────╮
+│                                                                  │
+│   Scanning /Users/nikhil/dev/my-app                              │
+│   Reading 0 files  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  4.2s              │
+│                                                                  │
+╰──────────────────────────────────────────────────────────────────╯
+
+
+  Discovered
+  ┌─────────────┬───────┬────────────────────────────────────────┐
+  │    Type     │ Count │                 Detail                 │
+  ├─────────────┼───────┼────────────────────────────────────────┤
+  │ Agents      │     2 │ CrewAI × 1, LangChain × 1              │
+  │ Tools       │     3 │ 1 function, 1 MCP, 1 shell, 0 code, 0  │
+  │             │       │ other                                  │
+  │ MCP Servers │     1 │ 0 stdio, 1 remote · 1 unverified       │
+  │             │       │ publishers                             │
+  │ Datasources │     1 │ 0 sensitive, 0 restricted, 0 internal  │
+  └─────────────┴───────┴────────────────────────────────────────┘
+
+
+  Findings                                                   2 total
+  ┌───┬──────────┬────────────────────┬─────┬────────────────────┐
+  │ # │ Severity │        Rule        │ Sco │      Location      │
+  ├───┼──────────┼────────────────────┼─────┼────────────────────┤
+  │ 1 │ CRITICAL │ LG-LETHAL-         │ −30 │ internal/mcp/slack │
+  │   │          │ TRIFECTA-01        │     │ .py:41             │
+  │ 2 │  MEDIUM  │ LG-MCP-DCR-01      │ −5  │ mcp.json:2         │
+  └───┴──────────┴────────────────────┴─────┴────────────────────┘
+
+
+  Attack Paths                             showing CRITICAL and HIGH
+  ┌──────────────────┬──────────────────┬─────────────────┬──────────────────────────────────┐
+  │        #         │     Severity     │      Path       │               Fix                │
+  ├──────────────────┼──────────────────┼─────────────────┼──────────────────────────────────┤
+  │        1         │     CRITICAL     │ support-agent   │ Scope Slack MCP to chat:read on… │
+  │                  │                  │ → Slack MCP     │                                  │
+  │                  │                  │ → Secrets store │ internal/mcp/slack.py:41         │
+  └──────────────────┴──────────────────┴─────────────────┴──────────────────────────────────┘
+
+
+  Score
+  ┌────────────────┬───────────────┐
+  │ Trifecta Score │ 65 / 100      │
+  │ Grade          │       C       │
+  │ Rubric         │ v1.0          │
+  │ Scan time      │ 4.2s          │
+  └────────────────┴───────────────┘
+
+  Breakdown
+  ┌──────────┬─────────┐
+  │ Critical │       1 │
+  │ High     │       0 │
+  │ Medium   │       1 │
+  │ Low      │       0 │
+  └──────────┴─────────┘
+
+
+  Next  layergrid explain LG-LETHAL-TRIFECTA-01     (deep-dive)
+        layergrid scan --format html -o report.html (shareable)
+        layergrid scan --fail-on high                (CI mode)

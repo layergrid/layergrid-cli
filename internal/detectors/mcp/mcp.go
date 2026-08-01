@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/layergrid/layergrid-cli/internal/detectors/detectopts"
@@ -23,12 +24,16 @@ type configFile struct {
 }
 
 type serverConfig struct {
-	Command string            `json:"command"`
-	Args    []string          `json:"args"`
-	Env     map[string]string `json:"env"`
-	URL     string            `json:"url"`
-	Scopes  []string          `json:"scopes"`
-	Auth    string            `json:"auth"`
+	Command        string            `json:"command"`
+	Args           []string          `json:"args"`
+	Env            map[string]string `json:"env"`
+	URL            string            `json:"url"`
+	Transport      string            `json:"transport"`
+	Scopes         []string          `json:"scopes"`
+	Auth           string            `json:"auth"`
+	AllowedDomains []string          `json:"allowedDomains"`
+	AllowDomains   []string          `json:"allowDomains"`
+	NetworkScope   string            `json:"networkScope"`
 }
 
 func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) error {
@@ -81,6 +86,7 @@ func detectConfig(root, path string, s *model.Stack) error {
 			IsExternal: isExternal(srv),
 			Publisher:  publisher(srv),
 			Descriptor: model.Descriptor(name, endpoint(srv), strings.Join(srv.Args, " ")),
+			Metadata:   metadata(srv),
 		}
 		tool := model.Tool{
 			ID:          model.StableID("tool", "mcp", path, name),
@@ -127,6 +133,9 @@ func endpoint(s serverConfig) string {
 }
 
 func transport(s serverConfig) string {
+	if s.Transport != "" {
+		return strings.ToLower(s.Transport)
+	}
 	if s.URL != "" {
 		if strings.Contains(s.URL, "/sse") {
 			return "sse"
@@ -187,6 +196,56 @@ func inferCapability(name string, s serverConfig, server model.MCPServer) model.
 		cap.Exfil = model.ExfilDB
 	}
 	return cap
+}
+
+func metadata(s serverConfig) map[string]string {
+	m := map[string]string{}
+	if hasInlineCredential(s.Env) {
+		m["env_credential_inline"] = "true"
+	}
+	if len(s.AllowedDomains) > 0 || len(s.AllowDomains) > 0 || s.NetworkScope != "" {
+		m["egress_allowlist"] = "true"
+	}
+	if len(m) == 0 {
+		return nil
+	}
+	return m
+}
+
+func hasInlineCredential(env map[string]string) bool {
+	for key, value := range env {
+		if isEnvReference(value) {
+			continue
+		}
+		if credentialValue(value) || credentialKeyValue(key, value) {
+			return true
+		}
+	}
+	return false
+}
+
+func isEnvReference(value string) bool {
+	v := strings.TrimSpace(value)
+	return strings.HasPrefix(v, "${") || strings.HasPrefix(v, "$")
+}
+
+func credentialValue(value string) bool {
+	v := strings.TrimSpace(value)
+	prefixes := []string{"ghp_", "sk-", "xoxb-", "xoxp-", "AKIA", "eyJ"}
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(v, prefix) && len(v) >= len(prefix)+16 {
+			return true
+		}
+	}
+	return false
+}
+
+func credentialKeyValue(key, value string) bool {
+	if len(strings.TrimSpace(value)) < 20 {
+		return false
+	}
+	re := regexp.MustCompile(`(?i)(token|secret|password|api_?key|access_key)`)
+	return re.MatchString(key)
 }
 
 func containsFold(values []string, needle string) bool {

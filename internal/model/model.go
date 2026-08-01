@@ -123,18 +123,19 @@ const (
 )
 
 type MCPServer struct {
-	ID           string   `json:"id"`
-	Name         string   `json:"name"`
-	Endpoint     string   `json:"endpoint"`
-	Transport    string   `json:"transport"`
-	Location     Location `json:"location"`
-	ToolIDs      []string `json:"toolIds,omitempty"`
-	AuthMode     MCPAuth  `json:"authMode"`
-	Scopes       []string `json:"scopes,omitempty"`
-	IsExternal   bool     `json:"isExternal"`
-	Publisher    string   `json:"publisher,omitempty"`
-	ManifestHash string   `json:"manifestHash,omitempty"`
-	Descriptor   string   `json:"descriptor"`
+	ID           string            `json:"id"`
+	Name         string            `json:"name"`
+	Endpoint     string            `json:"endpoint"`
+	Transport    string            `json:"transport"`
+	Location     Location          `json:"location"`
+	ToolIDs      []string          `json:"toolIds,omitempty"`
+	AuthMode     MCPAuth           `json:"authMode"`
+	Scopes       []string          `json:"scopes,omitempty"`
+	IsExternal   bool              `json:"isExternal"`
+	Publisher    string            `json:"publisher,omitempty"`
+	ManifestHash string            `json:"manifestHash,omitempty"`
+	Descriptor   string            `json:"descriptor"`
+	Metadata     map[string]string `json:"metadata,omitempty"`
 }
 
 type MCPAuth string
