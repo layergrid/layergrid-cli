@@ -31,6 +31,19 @@ Go:
 go install github.com/layergrid/layergrid-cli/cmd/layergrid@latest
 ```
 
+## CI Integration
+
+Add LayerGrid to your GitHub Actions workflow:
+
+```yaml
+- uses: layergrid/scan-action@v1
+  with:
+    fail-on: high
+    comment: true
+```
+
+[![View on GitHub Marketplace](https://img.shields.io/badge/GitHub-Marketplace-blue?logo=github)](https://github.com/marketplace/actions/layergrid-scan)
+
 ## Status
 
 Pre-release candidate work. The scanner is local-only and has no cloud dependency or telemetry.
@@ -57,6 +70,7 @@ layergrid scan . --format sarif --output layergrid.sarif
 
 - [Engineering principles](docs/PRINCIPLES.md)
 - [Rules](docs/RULES.md)
+- [CI integration](docs/CI.md)
 - [Precision report](docs/PRECISION.md)
 - [Benchmarks](docs/BENCHMARKS.md)
 - [Release process](docs/RELEASE.md)
