@@ -17,10 +17,13 @@ func (Detector) Framework() model.Framework { return model.FrameworkCrewAI }
 
 func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) error {
 	return pyutil.Walk(root, opts.Include, opts.Exclude, func(path string, lines []string) error {
+		if pyutil.FrameworkSource(root, path, "crewai") {
+			return nil
+		}
 		if !pyutil.HasAny(lines, "from crewai import", "crewai") {
 			return nil
 		}
-		var toolIDs []model.ToolRef
+		toolIDsByName := map[string]model.ToolRef{}
 		inDocstring := false
 		for i, line := range lines {
 			if togglesDocstring(line) {
@@ -32,18 +35,20 @@ func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) err
 			}
 			lower := strings.ToLower(line)
 			if strings.Contains(line, "Tool(") || strings.Contains(lower, "tools.") {
-				tool := inferTool(root, path, i+1, pyutil.AssignmentName(line, "crewai-tool"), pyutil.Block(lines, i, 10))
+				name := pyutil.AssignmentName(line, "crewai-tool")
+				tool := inferTool(root, path, i+1, name, pyutil.Block(lines, i, 10))
 				s.Tools = append(s.Tools, tool)
-				toolIDs = append(toolIDs, model.ToolRef(tool.ID))
+				toolIDsByName[name] = model.ToolRef(tool.ID)
 			}
 			if strings.Contains(line, "Agent(") {
+				block := pyutil.Block(lines, i, 25)
 				agent := model.Agent{
 					ID:        model.StableID("agent", "crewai", path, line),
 					Name:      pyutil.KeywordString(line, "role", "crewai-agent"),
 					Framework: model.FrameworkCrewAI,
 					Location:  model.RelativeLocation(root, path, i+1),
-					Tools:     append([]model.ToolRef{}, toolIDs...),
-					Memory:    memory(line),
+					Tools:     refsInBlock(toolIDsByName, block),
+					Memory:    memory(block),
 					Metadata:  map[string]string{"detector": "crewai"},
 				}
 				s.Agents = append(s.Agents, agent)
@@ -51,6 +56,19 @@ func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) err
 		}
 		return nil
 	})
+}
+
+func refsInBlock(toolIDsByName map[string]model.ToolRef, block string) []model.ToolRef {
+	if len(toolIDsByName) == 0 || !strings.Contains(strings.ToLower(block), "tools") {
+		return nil
+	}
+	var refs []model.ToolRef
+	for name, ref := range toolIDsByName {
+		if strings.Contains(block, name) {
+			refs = append(refs, ref)
+		}
+	}
+	return refs
 }
 
 func togglesDocstring(line string) bool {

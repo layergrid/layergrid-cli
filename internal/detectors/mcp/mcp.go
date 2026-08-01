@@ -231,6 +231,9 @@ func isEnvReference(value string) bool {
 
 func credentialValue(value string) bool {
 	v := strings.TrimSpace(value)
+	if placeholderCredential(v) {
+		return false
+	}
 	prefixes := []string{"ghp_", "sk-", "xoxb-", "xoxp-", "AKIA", "eyJ"}
 	for _, prefix := range prefixes {
 		if strings.HasPrefix(v, prefix) && len(v) >= len(prefix)+16 {
@@ -241,11 +244,30 @@ func credentialValue(value string) bool {
 }
 
 func credentialKeyValue(key, value string) bool {
-	if len(strings.TrimSpace(value)) < 20 {
+	v := strings.TrimSpace(value)
+	if placeholderCredential(v) || len(v) < 20 {
 		return false
 	}
 	re := regexp.MustCompile(`(?i)(token|secret|password|api_?key|access_key)`)
 	return re.MatchString(key)
+}
+
+func placeholderCredential(value string) bool {
+	v := strings.ToLower(strings.Trim(value, ` "'<>[]{}()`))
+	if v == "" {
+		return true
+	}
+	placeholders := []string{
+		"your-token", "your_token", "your-key", "your_key", "your-secret", "your_secret",
+		"replace-me", "replace_me", "changeme", "change-me", "todo", "insert-here",
+		"example-token", "example_key", "example-secret", "dummy", "placeholder",
+	}
+	for _, placeholder := range placeholders {
+		if v == placeholder || strings.Contains(v, placeholder) {
+			return true
+		}
+	}
+	return strings.HasPrefix(v, "your_") || strings.HasPrefix(v, "example_")
 }
 
 func containsFold(values []string, needle string) bool {

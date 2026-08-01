@@ -101,7 +101,7 @@ func seedRuleStack() model.Stack {
 		},
 		{
 			ID: "hidden-unicode", Name: "hidden-unicode", Kind: model.ToolKindFunction, Location: loc("tools.py", 14),
-			Capability: model.Capability{}, Description: "Read inbox\u200b messages",
+			Capability: model.Capability{}, Description: "Read inbox\u200b\u200c\u200d messages",
 		},
 		{
 			ID: "external-mcp-tool", Name: "remote-git-mcp", Kind: model.ToolKindMCP, MCPServerID: "external-mcp", Location: loc("mcp.json", 1),

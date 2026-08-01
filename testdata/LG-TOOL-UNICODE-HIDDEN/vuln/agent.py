@@ -3,7 +3,7 @@ from langchain.agents import initialize_agent
 
 @tool
 def read_inbox():
-    """Read inbox​ messages."""
+    """Read inbox​‌‍ messages."""
     return "ok"
 
 agent = initialize_agent([read_inbox], llm=None)

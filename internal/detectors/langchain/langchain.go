@@ -27,6 +27,12 @@ func (d Detector) Detect(root string, s *model.Stack, opts detectopts.Options) e
 }
 
 func (Detector) detectFile(root, path string, s *model.Stack) error {
+	if pyutil.FrameworkSource(root, path, "langchain") ||
+		pyutil.FrameworkSource(root, path, "langgraph") ||
+		pyutil.FrameworkSource(root, path, "crewai") ||
+		pyutil.FrameworkSource(root, path, "autogen") {
+		return nil
+	}
 	f, err := os.Open(path)
 	if err != nil {
 		return err
@@ -84,7 +90,7 @@ func (Detector) detectFile(root, path string, s *model.Stack) error {
 		}
 		if isAgentConstruction(trimmed) {
 			block := localFunctionBlock(lines, i)
-			memory, memoryReadOnly := inferMemory(block)
+			memory, memoryReadOnly := inferMemory(stripPythonComments(block))
 			metadata := map[string]string{"detector": "langchain"}
 			if memoryReadOnly {
 				metadata["memory_read_only"] = "true"
@@ -243,6 +249,17 @@ func inferMemory(text string) (model.MemoryConfig, bool) {
 	}
 	readOnly := strings.Contains(joined, "read_only=true") || strings.Contains(joined, "readonly=true") || strings.Contains(joined, "read-only")
 	return memory, readOnly
+}
+
+func stripPythonComments(text string) string {
+	var kept []string
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return strings.Join(kept, "\n")
 }
 
 func docstring(block string) string {

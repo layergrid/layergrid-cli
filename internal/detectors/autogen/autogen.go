@@ -17,13 +17,17 @@ func (Detector) Framework() model.Framework { return model.FrameworkAutoGen }
 
 func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) error {
 	return pyutil.Walk(root, opts.Include, opts.Exclude, func(path string, lines []string) error {
+		if pyutil.FrameworkSource(root, path, "autogen") {
+			return nil
+		}
 		if !pyutil.HasAny(lines, "autogen", "ConversableAgent", "GroupChat") {
 			return nil
 		}
-		var tools []model.ToolRef
+		toolIDsByName := map[string]model.ToolRef{}
 		for i, line := range lines {
 			lower := strings.ToLower(line)
 			if isExecutorConstruction(line) {
+				name := pyutil.AssignmentName(line, "autogen-executor")
 				kind := model.ToolKindCode
 				rationale := "docker-code-exec"
 				if strings.Contains(line, "LocalCommandLineCodeExecutor") {
@@ -32,7 +36,7 @@ func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) err
 				}
 				tool := model.Tool{
 					ID:         model.StableID("tool", "autogen", path, line),
-					Name:       rationale,
+					Name:       name,
 					Kind:       kind,
 					Source:     model.ToolSource{Kind: "python", Name: path},
 					Location:   model.RelativeLocation(root, path, i+1),
@@ -41,21 +45,35 @@ func (Detector) Detect(root string, s *model.Stack, opts detectopts.Options) err
 					Metadata:   map[string]string{"evidence": rationale},
 				}
 				s.Tools = append(s.Tools, tool)
-				tools = append(tools, model.ToolRef(tool.ID))
+				toolIDsByName[name] = model.ToolRef(tool.ID)
 			}
 			if strings.Contains(line, "ConversableAgent(") || strings.Contains(line, "AssistantAgent(") {
+				block := pyutil.Block(lines, i, 25)
 				s.Agents = append(s.Agents, model.Agent{
 					ID:        model.StableID("agent", "autogen", path, line),
 					Name:      pyutil.KeywordString(line, "name", "autogen-agent"),
 					Framework: model.FrameworkAutoGen,
 					Location:  model.RelativeLocation(root, path, i+1),
-					Tools:     append([]model.ToolRef{}, tools...),
+					Tools:     refsInBlock(toolIDsByName, block),
 					Metadata:  map[string]string{"detector": "autogen", "source": lower},
 				})
 			}
 		}
 		return nil
 	})
+}
+
+func refsInBlock(toolIDsByName map[string]model.ToolRef, block string) []model.ToolRef {
+	if len(toolIDsByName) == 0 {
+		return nil
+	}
+	var refs []model.ToolRef
+	for name, ref := range toolIDsByName {
+		if strings.Contains(block, name) {
+			refs = append(refs, ref)
+		}
+	}
+	return refs
 }
 
 func isExecutorConstruction(line string) bool {

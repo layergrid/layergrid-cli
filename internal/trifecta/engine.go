@@ -172,17 +172,20 @@ func externalMemoryWrite(agent model.Agent) bool {
 }
 
 func containsHiddenUnicode(text string) bool {
+	softHidden := 0
 	for _, r := range text {
 		switch {
-		case r == '\u200b' || r == '\u200c' || r == '\u200d' || r == '\ufeff' || r == '\u00ad':
+		case r == '\ufeff':
 			return true
+		case r == '\u200b' || r == '\u200c' || r == '\u200d' || r == '\u00ad':
+			softHidden++
 		case r >= '\u202a' && r <= '\u202e':
 			return true
 		case r >= '\u2066' && r <= '\u2069':
 			return true
 		}
 	}
-	return false
+	return softHidden >= 3
 }
 
 func stackHasSensitive(s *model.Stack) bool {
