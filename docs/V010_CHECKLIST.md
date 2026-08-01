@@ -29,3 +29,17 @@ Cut from current `main` after terminal output polish, five additional detector r
 - [x] `brew upgrade layergrid` installs rc.2 and shows the new banner
 - [x] Curl installer validates signatures and installs rc.2
 - [x] Dogfood scan on `layergrid-cli` passes at Grade A or B
+
+## v0.1.0-rc.3 Status
+
+Cut from current `main` after real-world false-positive hardening and `docs/FP_AUDIT.md`.
+
+- [x] CI passes on the rc.3 source commit
+- [x] Release workflow completes for `v0.1.0-rc.3`
+- [x] `v0.1.0-rc.3` is the latest GitHub release and is not marked prerelease
+- [x] Cosign produces `.sig` and `.pem` for every release artifact
+- [x] `cosign verify-blob` succeeds for release artifacts
+- [x] Homebrew tap formula updates to `v0.1.0-rc.3`
+- [x] `brew upgrade layergrid` installs rc.3 and shows the new banner
+- [x] Curl installer validates signatures and installs rc.3
+- [x] Dogfood scan on `layergrid-cli` passes at Grade A
