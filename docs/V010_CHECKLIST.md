@@ -21,11 +21,11 @@ Check these before tagging `v0.1.0`.
 
 Cut from current `main` after terminal output polish, five additional detector rules, and `layergrid baseline`.
 
-- [ ] CI passes on the rc.2 source commit
-- [ ] Release workflow completes for `v0.1.0-rc.2`
-- [ ] Cosign produces `.sig` and `.pem` for every release artifact
-- [ ] `cosign verify-blob` succeeds for release artifacts
-- [ ] Homebrew tap formula updates to `v0.1.0-rc.2`
-- [ ] `brew upgrade layergrid` installs rc.2 and shows the new banner
-- [ ] Curl installer validates signatures and installs rc.2
+- [x] CI passes on the rc.2 source commit
+- [x] Release workflow completes for `v0.1.0-rc.2`
+- [x] Cosign produces `.sig` and `.pem` for every release artifact
+- [x] `cosign verify-blob` succeeds for release artifacts
+- [x] Homebrew tap formula updates to `v0.1.0-rc.2`
+- [x] `brew upgrade layergrid` installs rc.2 and shows the new banner
+- [x] Curl installer validates signatures and installs rc.2
 - [x] Dogfood scan on `layergrid-cli` passes at Grade A or B
